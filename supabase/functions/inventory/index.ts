@@ -46,6 +46,8 @@ const TECH = new Set(["createTechRequest", "analyzePartPhoto", "moveEquipment", 
 const OFFICE_ONLY = new Set([
   "deletePart", "deleteOrder", "deleteStaging", "deleteTechRequest", "deleteEquipment", "deleteIntakeVerification",
   "recalcPricing", "backfillDepartments", "markConsignmentEmailSent", "markConsignmentEmailFailed", "createLocation",
+  // Pricing and who-owns-what / who-gets-emailed are office decisions.
+  "updateOrderLine", "importPoLines", "setEquipmentConsignment",
 ]);
 function allowed(role: AppRole, action: string): boolean {
   if (role === "ADMIN" || role === "MANAGER") return true;
@@ -88,6 +90,13 @@ async function complete<S extends z.ZodTypeAny>(prompt: string, opts: { schema: 
   const tool = (body.content ?? []).find((c: any) => c.type === "tool_use");
   if (!tool) throw new Error("AI returned no structured answer");
   return opts.schema.parse(tool.input);
+}
+
+function sameSecret(a: string, b: string): boolean {
+  const x = new TextEncoder().encode(a), y = new TextEncoder().encode(b);
+  let diff = x.length ^ y.length;
+  for (let i = 0; i < Math.max(x.length, y.length); i++) diff |= (x[i] ?? 0) ^ (y[i] ?? 0);
+  return diff === 0;
 }
 
 // ---------- deploy self-test (cron token only) ----------
@@ -135,7 +144,7 @@ Deno.serve(async (req) => {
   const cronToken = req.headers.get("x-cron-token");
   if (cronToken) {
     const [row] = await sqlClient`select value from inventory.app_config where key = 'cron_token'`;
-    if (!row || row.value !== cronToken) return json({ error: "forbidden" }, 403);
+    if (!row || !sameSecret(String(row.value), cronToken)) return json({ error: "forbidden" }, 403);
     const b = await req.json().catch(() => ({}));
     if (b?.action === "selftest") return json(await selfTest());
     return json({ ok: true, ...(await flushOutbox(db, 50)) });

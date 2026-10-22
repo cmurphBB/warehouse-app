@@ -1,8 +1,8 @@
-import { asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, lt, or } from "drizzle-orm";
 import * as schema from "./schema.ts";
 import { defineAction, z, type ActionsModule } from "./sdk.ts";
 import { mailLive } from "./mail.ts";
-import { stCreateInstalledEquipment, stFindJob, stJobNote, stLive } from "./servicetitan.ts";
+import { stCreateInstalledEquipment, stFindInstalledEquipmentBySerial, stFindJob, stJobNote, stLive } from "./servicetitan.ts";
 
 export const DEPARTMENTS = ["Pipe & Tubing", "Fittings", "Valves", "HVAC Parts", "Fixtures & Trim", "Pumps, Filters & Water", "Electrical & Controls", "Hardware & Hangers", "Consumables & Safety", "Other"] as const;
 export type Department = typeof DEPARTMENTS[number];
@@ -239,6 +239,21 @@ function base64ToBytes(b64: string): Uint8Array {
 function mimeToExt(mime: string): string { return mime.includes("png") ? "png" : "jpg"; }
 type GetState = z.infer<typeof getStateResponse>;
 
+// Field techs see where things are, not what they cost or vendor correspondence.
+function redactForTech(s: GetState): GetState {
+  return {
+    ...s,
+    parts: s.parts.map((p) => ({ ...p, avgCostCents: 0, lastCostCents: 0, lastVendor: "" })),
+    stock: s.stock.map((r) => ({ ...r, avgCostCents: 0 })),
+    partPrices: [],
+    orders: s.orders.map((o) => ({ ...o, lines: o.lines.map((l) => ({ ...l, unitCostCents: 0 })) })),
+    equipment: s.equipment.map((e) => ({ ...e, consignmentEmail: "", consignmentValueCents: 0 })),
+    consignmentLogs: s.consignmentLogs.map((l) => ({ ...l, notifyEmail: "", emailSubject: "", emailBody: "" })),
+    consignmentByOwner: s.consignmentByOwner.map((o) => ({ ...o, email: "", valueCents: 0 })),
+    stats: { ...s.stats, consignmentValueCents: 0 },
+  };
+}
+
 async function buildState(ctx: any): Promise<GetState> {
   const db: any = ctx.db();
   const [parts, locs, stockRows, orders, orderLines, staging, stagingLines, tech, intakes, equipmentRows, equipLogs, consignLogs] = await Promise.all([
@@ -256,17 +271,17 @@ async function buildState(ctx: any): Promise<GetState> {
     db.select().from(schema.consignmentLogs).orderBy(desc(schema.consignmentLogs.createdAt)),
   ]);
   // Resolve blob URLs for photos
+  const signed = async (k: string) => { if (!k) return ""; try { return await ctx.blobs.getUrl(k); } catch { return ""; } };
+  const techUrls = await Promise.all(tech.map((t: any) => signed(t.imageBlobKey)));
+  const intakeUrls = await Promise.all(intakes.map((v: any) => Promise.all([signed(v.invoiceBlobKey), signed(v.partBlobKey)])));
   const techWithUrls: any[] = [];
-  for (const t of tech) {
-    let imageUrl = "";
-    if (t.imageBlobKey) { try { imageUrl = await ctx.blobs.getUrl(t.imageBlobKey); } catch { imageUrl = ""; } }
+  for (const [ti, t] of tech.entries()) {
+    const imageUrl = techUrls[ti] ?? "";
     techWithUrls.push({ id: t.id, techName: t.techName, partDescription: t.partDescription, qty: t.qty, urgency: t.urgency, jobRef: t.jobRef, status: t.status, notes: t.notes, imageUrl, aiPartName: t.aiPartName ?? "", aiEquipment: t.aiEquipment ?? "", aiConfidence: t.aiConfidence ?? "", aiNotes: t.aiNotes ?? "", created_at: t.createdAt.toISOString() });
   }
   const intakeWithUrls: any[] = [];
-  for (const v of intakes) {
-    let invoiceImageUrl = ""; let partImageUrl = "";
-    if (v.invoiceBlobKey) { try { invoiceImageUrl = await ctx.blobs.getUrl(v.invoiceBlobKey); } catch { invoiceImageUrl = ""; } }
-    if (v.partBlobKey) { try { partImageUrl = await ctx.blobs.getUrl(v.partBlobKey); } catch { partImageUrl = ""; } }
+  for (const [vi, v] of intakes.entries()) {
+    const [invoiceImageUrl = "", partImageUrl = ""] = intakeUrls[vi] ?? [];
     intakeWithUrls.push({ id: v.id, orderId: v.orderId ?? null, vendor: v.vendor, poNumber: v.poNumber, checkedBy: v.checkedBy, verdict: v.verdict, confidence: v.confidence, invoiceImageUrl, partImageUrl, invoiceVendor: v.invoiceVendor, invoicePoNumber: v.invoicePoNumber, invoiceParts: v.invoiceParts, physicalPart: v.physicalPart, summary: v.summary, discrepancies: v.discrepancies, recommendedAction: v.recommendedAction, created_at: v.createdAt.toISOString() });
   }
   const partMap: Map<number, any> = new Map(parts.map((p: any) => [p.id, p] as [number, any]));
@@ -444,34 +459,58 @@ async function insertConsignmentLog(db: any, args: { equipmentId: number; owner:
   return { id: cl!.id };
 }
 
+const etDate = (d: Date) => d.toLocaleDateString("en-US", { timeZone: "America/New_York" });
+const etIsoDay = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+
 // Writes an installed consigned water heater onto the customer's installed
-// equipment in ServiceTitan. Idempotent: a unit already synced is left alone.
-// Failures are recorded on the unit (stSync = "error", stError) for retry.
-async function syncWaterHeaterToSt(db: any, equipmentId: number): Promise<{ status: string; message: string }> {
+// equipment in ServiceTitan. Guards against the two expensive mistakes:
+//  - duplicates: an atomic claim (stSync → "syncing") lets only one sync run;
+//    the new ST id is saved the moment ST accepts it; and before creating, the
+//    customer's location is checked for a record with the same serial.
+//  - wrong customer: if the job # was never verified in ST at pull time, the
+//    sync stops and asks a manager to confirm the customer ST returns.
+async function syncWaterHeaterToSt(db: any, equipmentId: number, opts: { confirmJob: boolean }): Promise<{ status: string; message: string }> {
   const [e] = await db.select().from(schema.equipment).where(eq(schema.equipment.id, equipmentId));
   if (!e) return { status: "error", message: "Unit not found" };
   if (!e.installedAt) return { status: e.stSync ?? "n/a", message: "Not installed yet — nothing to sync" };
   if (!stLive()) return { status: "n/a", message: "ServiceTitan sync off" };
-  if (e.stEquipmentId) return { status: "ok", message: "Already on the ServiceTitan customer" };
+  if (e.stEquipmentId || e.stSync === "ok") return { status: "ok", message: "Already on the ServiceTitan customer" };
+  const staleBefore = new Date(Date.now() - 10 * 60_000);
+  const [u] = await db.update(schema.equipment).set({ stSync: "syncing", updatedAt: new Date() })
+    .where(and(eq(schema.equipment.id, equipmentId), isNull(schema.equipment.stEquipmentId),
+      or(inArray(schema.equipment.stSync, ["pending", "error", "n/a"]), and(eq(schema.equipment.stSync, "syncing"), lt(schema.equipment.updatedAt, staleBefore)))))
+    .returning();
+  if (!u) return { status: "syncing", message: "A ServiceTitan sync for this unit is already running" };
+  const fail = async (status: string, msg: string) => {
+    await db.update(schema.equipment).set({ stSync: "error", stError: msg.slice(0, 500) }).where(eq(schema.equipment.id, equipmentId));
+    return { status, message: msg };
+  };
   try {
-    let { stJobId, stCustomerId, stLocationId } = e;
+    let { stJobId, stCustomerId, stLocationId } = u;
     if (!stLocationId || !stCustomerId) {
-      const j = await stFindJob(e.jobNumber);
+      const j = await stFindJob(u.jobNumber);
+      if (!opts.confirmJob) {
+        return fail("needs_confirm", `Job #${u.jobNumber} wasn't verified in ServiceTitan when this unit was pulled. ServiceTitan says job #${u.jobNumber} is ${j.customerName || `customer ${j.customerId}`}. A manager must confirm before the serial is written there.`);
+      }
       stJobId = j.jobId; stCustomerId = j.customerId; stLocationId = j.locationId;
+      await db.update(schema.equipment).set({ stJobId, stCustomerId, stLocationId, customerName: u.customerName || j.customerName }).where(eq(schema.equipment.id, equipmentId));
     }
-    const [brand] = String(e.brandModel ?? "").split(" ");
-    const created = await stCreateInstalledEquipment({
-      locationId: stLocationId, customerId: stCustomerId, name: e.name, installedOn: e.installedAt.toISOString(),
-      manufacturer: brand && e.brandModel.includes(" ") ? brand : "", model: e.brandModel, serialNumber: e.serialNumber,
-      memo: `CONSIGNED – ${e.consignmentOwner} – pulled ${e.pulledAt ? e.pulledAt.toISOString().slice(0, 10) : "?"} – job #${e.jobNumber}`,
-    });
-    if (stJobId) { try { await stJobNote(stJobId, `Consigned water heater INSTALLED. Serial ${e.serialNumber} added to the customer's equipment.`); } catch { /* best-effort */ } }
-    await db.update(schema.equipment).set({ stEquipmentId: created.id, stJobId, stCustomerId, stLocationId, stSync: "ok", stError: "" }).where(eq(schema.equipment.id, equipmentId));
+    let stId: number | null = await stFindInstalledEquipmentBySerial(stLocationId, u.serialNumber).catch(() => null);
+    if (!stId) {
+      const [brand] = String(u.brandModel ?? "").split(" ");
+      const created = await stCreateInstalledEquipment({
+        locationId: stLocationId, customerId: stCustomerId, name: u.name, installedOn: u.installedAt.toISOString(),
+        manufacturer: brand && u.brandModel.includes(" ") ? brand : "", model: u.brandModel, serialNumber: u.serialNumber,
+        memo: `CONSIGNED – ${u.consignmentOwner} – pulled ${u.pulledAt ? etIsoDay(u.pulledAt) : "?"} – job #${u.jobNumber}`,
+      });
+      stId = created.id;
+    }
+    // Saved immediately: from here on a retry can never create a second record.
+    await db.update(schema.equipment).set({ stEquipmentId: stId, stJobId, stCustomerId, stLocationId, stSync: "ok", stError: "" }).where(eq(schema.equipment.id, equipmentId));
+    if (stJobId) { try { await stJobNote(stJobId, `Consigned water heater INSTALLED. Serial ${u.serialNumber} added to the customer's equipment.`); } catch { /* best-effort */ } }
     return { status: "ok", message: "serial added to the ServiceTitan customer" };
   } catch (err) {
-    const msg = String((err as Error).message ?? err).slice(0, 500);
-    await db.update(schema.equipment).set({ stSync: "error", stError: msg }).where(eq(schema.equipment.id, equipmentId));
-    return { status: "error", message: `ServiceTitan sync failed: ${msg}` };
+    return fail("error", `ServiceTitan sync failed: ${String((err as Error).message ?? err)}`);
   }
 }
 
@@ -501,7 +540,10 @@ export const Actions = {
   getState: defineAction({
     request: z.object({}),
     response: getStateResponse,
-    async handler(ctx): Promise<GetState> { return buildState(ctx as any); },
+    async handler(ctx): Promise<GetState> {
+      const s = await buildState(ctx as any);
+      return ctx.user.role === "TECHNICIAN" ? redactForTech(s) : s;
+    },
   }),
 
   createPart: defineAction({
@@ -1089,7 +1131,18 @@ export const Actions = {
     response: z.object({ ok: z.boolean() }),
     async handler(ctx, args) {
       const db = ctx.db<typeof schema>();
-      await db.update(schema.equipment).set({ name: args.name.trim(), category: args.category, serialNumber: args.serialNumber, assetTag: args.assetTag, brandModel: args.brandModel, condition: args.condition, assignedTo: args.assignedTo, notes: args.notes, isConsigned: args.isConsigned ? 1 : 0, consignmentOwner: args.consignmentOwner.trim(), consignmentEmail: args.consignmentEmail.trim(), consignmentValueCents: args.consignmentValueCents, consignmentNotes: args.consignmentNotes.trim(), updatedAt: new Date() }).where(eq(schema.equipment.id, args.id));
+      const [cur] = await db.select().from(schema.equipment).where(eq(schema.equipment.id, args.id));
+      if (!cur) return { ok: false };
+      const wh = isWaterHeater(cur) && cur.isConsigned === 1;
+      if (wh && cur.pulledAt && (args.serialNumber.trim() !== cur.serialNumber || args.brandModel.trim() !== cur.brandModel || !isWaterHeater({ category: args.category, name: args.name }))) {
+        throw new Error("This water heater has left the warehouse — its serial, model and category are locked");
+      }
+      // Who owns it and who gets the emails is an office decision.
+      const office = ctx.user.role === "ADMIN" || ctx.user.role === "MANAGER";
+      const consign = office
+        ? { isConsigned: args.isConsigned ? 1 : 0, consignmentOwner: args.consignmentOwner.trim(), consignmentEmail: args.consignmentEmail.trim(), consignmentValueCents: args.consignmentValueCents, consignmentNotes: args.consignmentNotes.trim() }
+        : {};
+      await db.update(schema.equipment).set({ name: args.name.trim(), category: args.category, serialNumber: args.serialNumber, assetTag: args.assetTag, brandModel: args.brandModel, condition: args.condition, assignedTo: args.assignedTo, notes: args.notes, ...consign, updatedAt: new Date() }).where(eq(schema.equipment.id, args.id));
       ctx.invalidateQueries(); return { ok: true };
     },
   }),
@@ -1155,6 +1208,7 @@ export const Actions = {
       const db = ctx.db<typeof schema>();
       const [eqRow] = await db.select().from(schema.equipment).where(eq(schema.equipment.id, args.equipmentId));
       if (!eqRow) return { ok: false, message: "Equipment not found", consignmentLogged: false, consignmentEmailQueued: false };
+      if (isWaterHeater(eqRow) && eqRow.isConsigned === 1) throw new Error("Consigned water heaters move only through Consign → Water heaters (Pull / Install / Return), so billing dates and ServiceTitan stay right");
       const fromLocationId = eqRow.currentLocationId ?? null;
       const toLocationId = args.toLocationId !== null && args.toLocationId !== undefined ? args.toLocationId : fromLocationId;
       // Derive status if not explicitly provided
@@ -1207,6 +1261,7 @@ export const Actions = {
       const db = ctx.db<typeof schema>();
       const [eqRow] = await db.select().from(schema.equipment).where(eq(schema.equipment.id, args.id));
       if (!eqRow) return { ok: false };
+      if (isWaterHeater(eqRow) && eqRow.isConsigned === 1) throw new Error("Consigned water heaters move only through Consign → Water heaters (Pull / Install / Return), so billing dates and ServiceTitan stay right");
       await db.update(schema.equipment).set({ status: args.status, updatedAt: new Date() }).where(eq(schema.equipment.id, args.id));
       await db.insert(schema.equipmentLogs).values({ equipmentId: args.id, equipmentName: eqRow.name, equipmentRemoved: 0, action: "status_change", fromLocationId: eqRow.currentLocationId ?? null, toLocationId: eqRow.currentLocationId ?? null, performedBy: args.performedBy, notes: args.notes || `Status changed ${eqRow.status} → ${args.status}` });
       ctx.invalidateQueries(); return { ok: true };
@@ -1275,6 +1330,7 @@ export const Actions = {
       const [row] = await db.select().from(schema.consignmentLogs).where(eq(schema.consignmentLogs.id, args.logId));
       if (!row) return { ok: false, queued: false, message: "That log entry no longer exists" };
       if ((row as any).emailStatus === "sent") return { ok: false, queued: false, message: "That email was already sent — nothing to re-queue" };
+      if ((row as any).emailStatus !== "failed") return { ok: false, queued: false, message: "That email is still on its way — only failed emails can be retried" };
       if (!(row as any).notifyEmail?.trim()) return { ok: false, queued: false, message: "No owner email on file for this entry — add one on the equipment first" };
       // Re-queue only: put the entry back to "queued" for the external
       // dispatcher. The app does not send it and spawns nothing.
@@ -1365,7 +1421,10 @@ export const Actions = {
         name, category: "Water Heater", serialNumber: serial, assetTag: "", brandModel: [args.brand.trim(), args.model.toUpperCase()].filter(Boolean).join(" "),
         status: "available", condition: "new", currentLocationId: args.warehouseLocationId, assignedTo: "", notes: args.notes.trim(),
         isConsigned: 1, consignmentOwner: args.supplyHouse.trim(), consignmentEmail: args.supplyHouseEmail.trim(), consignmentValueCents: args.valueCents, consignmentNotes: "Consigned water heater",
-      }).returning({ id: schema.equipment.id });
+      }).returning({ id: schema.equipment.id }).catch((err: any) => {
+        if (String(err?.code ?? err?.cause?.code) === "23505") throw new Error(`Serial ${serial} is already in the system`);
+        throw err;
+      });
       const id = r!.id;
       await db.insert(schema.equipmentLogs).values({ equipmentId: id, equipmentName: name, equipmentRemoved: 0, action: "created", fromLocationId: null, toLocationId: args.warehouseLocationId, performedBy: args.performedBy, notes: `Consigned water heater received from ${args.supplyHouse.trim()}` });
       await insertConsignmentLog(db, { equipmentId: id, owner: args.supplyHouse.trim(), notifyEmail: args.supplyHouseEmail, fromLocationId: null, toLocationId: args.warehouseLocationId, action: "created", performedBy: args.performedBy, notes: "Received into consigned stock", jobRef: "", skipEmail: true });
@@ -1382,24 +1441,28 @@ export const Actions = {
       const [e] = await db.select().from(schema.equipment).where(eq(schema.equipment.id, args.equipmentId));
       if (!e || !isWaterHeater(e) || e.isConsigned !== 1) throw new Error("That isn't a consigned water heater");
       if (e.pulledAt || e.status === "installed") throw new Error(`Serial ${e.serialNumber} is already pulled for job #${e.jobNumber || "?"}`);
+      // Read-only ST lookup first: a bad job # stops the pull before anything changes.
+      const st = stLive() ? await stFindJob(args.jobNumber) : null;
       const now = new Date();
-      let st: { jobId: number; customerId: number; locationId: number; customerName: string } | null = null;
-      let stMsg = "ServiceTitan sync off";
-      if (stLive()) {
-        st = await stFindJob(args.jobNumber); // throws "Job # not found" → nothing changes
-        try {
-          await stJobNote(st.jobId, `Consigned water heater PULLED from warehouse ${now.toLocaleDateString("en-US", { timeZone: "America/New_York" })}. Serial ${e.serialNumber}, ${e.brandModel}${args.performedBy ? `, by ${args.performedBy}` : ""}.`);
-          stMsg = "job note added in ServiceTitan";
-        } catch { stMsg = "ServiceTitan job note failed (unit still pulled)"; }
-      }
       const toLocationId = args.toLocationId ?? e.currentLocationId ?? null;
-      await db.update(schema.equipment).set({
-        status: "in_use", currentLocationId: toLocationId, assignedTo: args.performedBy, jobNumber: args.jobNumber, pulledAt: now,
-        customerName: st?.customerName ?? "", stJobId: st?.jobId ?? null, stCustomerId: st?.customerId ?? null, stLocationId: st?.locationId ?? null,
-        updatedAt: now,
-      }).where(eq(schema.equipment.id, e.id));
-      await db.insert(schema.equipmentLogs).values({ equipmentId: e.id, equipmentName: e.name, equipmentRemoved: 0, action: "checkout", fromLocationId: e.currentLocationId ?? null, toLocationId, performedBy: args.performedBy, notes: `Pulled for job #${args.jobNumber}` });
-      await insertConsignmentLog(db, { equipmentId: e.id, owner: e.consignmentOwner, notifyEmail: e.consignmentEmail, fromLocationId: e.currentLocationId ?? null, toLocationId, action: "checkout", performedBy: args.performedBy, notes: `Pulled for job #${args.jobNumber}${st?.customerName ? ` (${st.customerName})` : ""}. Please invoice against this serial from today's date.`, jobRef: `Job #${args.jobNumber}` });
+      const pulled = await db.transaction(async (tx: any) => {
+        // Conditional update: if another iPad pulled this unit a moment ago, nothing matches.
+        const [u] = await tx.update(schema.equipment).set({
+          status: "in_use", currentLocationId: toLocationId, assignedTo: args.performedBy, jobNumber: args.jobNumber, pulledAt: now,
+          customerName: st?.customerName ?? "", stJobId: st?.jobId ?? null, stCustomerId: st?.customerId ?? null, stLocationId: st?.locationId ?? null,
+          stSync: "n/a", stError: "", updatedAt: now,
+        }).where(and(eq(schema.equipment.id, e.id), isNull(schema.equipment.pulledAt), isNull(schema.equipment.installedAt))).returning({ id: schema.equipment.id });
+        if (!u) return false;
+        await tx.insert(schema.equipmentLogs).values({ equipmentId: e.id, equipmentName: e.name, equipmentRemoved: 0, action: "checkout", fromLocationId: e.currentLocationId ?? null, toLocationId, performedBy: args.performedBy, notes: `Pulled for job #${args.jobNumber}` });
+        await insertConsignmentLog(tx, { equipmentId: e.id, owner: e.consignmentOwner, notifyEmail: e.consignmentEmail, fromLocationId: e.currentLocationId ?? null, toLocationId, action: "checkout", performedBy: args.performedBy, notes: `Pulled for job #${args.jobNumber}${st?.customerName ? ` (${st.customerName})` : ""}. Please invoice against this serial from today's date.`, jobRef: `Job #${args.jobNumber}` });
+        return true;
+      });
+      if (!pulled) throw new Error(`Serial ${e.serialNumber} was just pulled by someone else — refresh`);
+      let stMsg = st ? "job note added in ServiceTitan" : "ServiceTitan sync off — job # not verified";
+      if (st) {
+        try { await stJobNote(st.jobId, `Consigned water heater PULLED from warehouse ${etDate(now)}. Serial ${e.serialNumber}, ${e.brandModel}${args.performedBy ? `, by ${args.performedBy}` : ""}.`); }
+        catch { stMsg = "ServiceTitan job note failed (unit still pulled)"; }
+      }
       ctx.invalidateQueries();
       return { ok: true, message: `Pulled ${e.serialNumber} for job #${args.jobNumber} · ${stMsg}` };
     },
@@ -1414,24 +1477,34 @@ export const Actions = {
       if (!e || !isWaterHeater(e) || e.isConsigned !== 1) throw new Error("That isn't a consigned water heater");
       if (!e.pulledAt) throw new Error(`Serial ${e.serialNumber} hasn't been pulled for a job yet`);
       if (e.installedAt) throw new Error(`Serial ${e.serialNumber} is already installed`);
-      const installedAt = args.installedOn ? new Date(`${args.installedOn}T12:00:00-05:00`) : new Date();
+      // Noon Eastern on the chosen day, so the date never shifts across midnight UTC.
+      const installedAt = args.installedOn ? new Date(`${args.installedOn}T17:00:00Z`) : new Date();
       if (installedAt.getTime() > Date.now() + 86_400_000) throw new Error("Install date can't be in the future");
-      await db.update(schema.equipment).set({ status: "installed", installedAt, currentLocationId: null, stSync: stLive() ? "pending" : "n/a", stError: "", updatedAt: new Date() }).where(eq(schema.equipment.id, e.id));
-      await db.insert(schema.equipmentLogs).values({ equipmentId: e.id, equipmentName: e.name, equipmentRemoved: 0, action: "installed", fromLocationId: e.currentLocationId ?? null, toLocationId: null, performedBy: args.performedBy, notes: `Installed for job #${e.jobNumber}${e.customerName ? ` at ${e.customerName}` : ""}` });
-      await insertConsignmentLog(db, { equipmentId: e.id, owner: e.consignmentOwner, notifyEmail: e.consignmentEmail, fromLocationId: e.currentLocationId ?? null, toLocationId: null, toNameOverride: e.customerName ? `Customer: ${e.customerName}` : `Customer (job #${e.jobNumber})`, action: "installed", performedBy: args.performedBy, notes: `Installed ${installedAt.toLocaleDateString("en-US", { timeZone: "America/New_York" })}. Pulled ${e.pulledAt.toLocaleDateString("en-US", { timeZone: "America/New_York" })}.`, jobRef: `Job #${e.jobNumber}` });
-      const sync = await syncWaterHeaterToSt(db, e.id);
+      if (installedAt.getTime() < e.pulledAt.getTime() - 86_400_000) throw new Error("Install date can't be before the pull date");
+      const done = await db.transaction(async (tx: any) => {
+        const [u] = await tx.update(schema.equipment).set({ status: "installed", installedAt, currentLocationId: null, stSync: stLive() ? "pending" : "n/a", stError: "", updatedAt: new Date() })
+          .where(and(eq(schema.equipment.id, e.id), isNotNull(schema.equipment.pulledAt), isNull(schema.equipment.installedAt))).returning({ id: schema.equipment.id });
+        if (!u) return false;
+        await tx.insert(schema.equipmentLogs).values({ equipmentId: e.id, equipmentName: e.name, equipmentRemoved: 0, action: "installed", fromLocationId: e.currentLocationId ?? null, toLocationId: null, performedBy: args.performedBy, notes: `Installed for job #${e.jobNumber}${e.customerName ? ` at ${e.customerName}` : ""}` });
+        await insertConsignmentLog(tx, { equipmentId: e.id, owner: e.consignmentOwner, notifyEmail: e.consignmentEmail, fromLocationId: e.currentLocationId ?? null, toLocationId: null, toNameOverride: e.customerName ? `Customer: ${e.customerName}` : `Customer (job #${e.jobNumber})`, action: "installed", performedBy: args.performedBy, notes: `Installed ${etDate(installedAt)}. Pulled ${etDate(e.pulledAt!)}.`, jobRef: `Job #${e.jobNumber}` });
+        return true;
+      });
+      if (!done) throw new Error(`Serial ${e.serialNumber} was just updated by someone else — refresh`);
+      const sync = await syncWaterHeaterToSt(db, e.id, { confirmJob: false });
       ctx.invalidateQueries();
       return { ok: true, message: `Installed ${e.serialNumber} · ${sync.message}`, stSync: sync.status };
     },
   }),
 
   whRetrySt: defineAction({
-    request: z.object({ equipmentId: z.number() }),
-    response: z.object({ ok: z.boolean(), message: z.string(), stSync: z.string() }),
+    request: z.object({ equipmentId: z.number(), confirmJob: z.boolean().default(false) }),
+    response: z.object({ ok: z.boolean(), message: z.string(), stSync: z.string(), needsConfirm: z.boolean() }),
     async handler(ctx, args) {
-      const sync = await syncWaterHeaterToSt(ctx.db(), args.equipmentId);
+      // Writing a serial to a job that was never verified at pull time is an office call.
+      if (args.confirmJob && ctx.user.role !== "ADMIN" && ctx.user.role !== "MANAGER") throw new Error("Only a manager can confirm the ServiceTitan customer");
+      const sync = await syncWaterHeaterToSt(ctx.db(), args.equipmentId, { confirmJob: args.confirmJob });
       ctx.invalidateQueries();
-      return { ok: sync.status === "ok", message: sync.message, stSync: sync.status };
+      return { ok: sync.status === "ok", message: sync.message, stSync: sync.status, needsConfirm: sync.status === "needs_confirm" };
     },
   }),
 
@@ -1444,18 +1517,23 @@ export const Actions = {
       if (!e || !isWaterHeater(e) || e.isConsigned !== 1) throw new Error("That isn't a consigned water heater");
       if (!e.pulledAt || e.installedAt) throw new Error(`Only pulled, not-installed units can be returned (${e.serialNumber} is ${e.installedAt ? "installed" : "in stock"})`);
       const now = new Date();
-      if (stLive() && e.stJobId) {
-        try { await stJobNote(e.stJobId, `Consigned water heater serial ${e.serialNumber} RETURNED to warehouse ${now.toLocaleDateString("en-US", { timeZone: "America/New_York" })} — not installed on this job.${args.reason ? ` Reason: ${args.reason}` : ""}`); } catch { /* best-effort */ }
-      }
       const toLocationId = args.toLocationId ?? null;
       const prevJob = e.jobNumber;
-      await db.update(schema.equipment).set({
-        status: "available", currentLocationId: toLocationId, assignedTo: "", jobNumber: "", customerName: "", pulledAt: null,
-        stJobId: null, stCustomerId: null, stLocationId: null, updatedAt: now,
-        notes: [e.notes, `Returned ${now.toLocaleDateString("en-US", { timeZone: "America/New_York" })} from job #${prevJob}${args.reason ? `: ${args.reason}` : ""}`].filter(Boolean).join(" | "),
-      }).where(eq(schema.equipment.id, e.id));
-      await db.insert(schema.equipmentLogs).values({ equipmentId: e.id, equipmentName: e.name, equipmentRemoved: 0, action: "checkin", fromLocationId: e.currentLocationId ?? null, toLocationId, performedBy: args.performedBy, notes: `Returned from job #${prevJob} — not installed${args.reason ? ` (${args.reason})` : ""}` });
-      await insertConsignmentLog(db, { equipmentId: e.id, owner: e.consignmentOwner, notifyEmail: e.consignmentEmail, fromLocationId: e.currentLocationId ?? null, toLocationId, action: "checkin", performedBy: args.performedBy, notes: `Returned to consigned stock — NOT installed on job #${prevJob}. Please void or credit any charge for this serial.${args.reason ? ` Reason: ${args.reason}` : ""}`, jobRef: `Job #${prevJob}` });
+      const done = await db.transaction(async (tx: any) => {
+        const [u] = await tx.update(schema.equipment).set({
+          status: "available", currentLocationId: toLocationId, assignedTo: "", jobNumber: "", customerName: "", pulledAt: null,
+          stJobId: null, stCustomerId: null, stLocationId: null, stSync: "n/a", stError: "", updatedAt: now,
+          notes: [e.notes, `Returned ${etDate(now)} from job #${prevJob}${args.reason ? `: ${args.reason}` : ""}`].filter(Boolean).join(" | "),
+        }).where(and(eq(schema.equipment.id, e.id), isNotNull(schema.equipment.pulledAt), isNull(schema.equipment.installedAt))).returning({ id: schema.equipment.id });
+        if (!u) return false;
+        await tx.insert(schema.equipmentLogs).values({ equipmentId: e.id, equipmentName: e.name, equipmentRemoved: 0, action: "checkin", fromLocationId: e.currentLocationId ?? null, toLocationId, performedBy: args.performedBy, notes: `Returned from job #${prevJob} — not installed${args.reason ? ` (${args.reason})` : ""}` });
+        await insertConsignmentLog(tx, { equipmentId: e.id, owner: e.consignmentOwner, notifyEmail: e.consignmentEmail, fromLocationId: e.currentLocationId ?? null, toLocationId, action: "checkin", performedBy: args.performedBy, notes: `Returned to consigned stock — NOT installed on job #${prevJob}. Please void or credit any charge for this serial.${args.reason ? ` Reason: ${args.reason}` : ""}`, jobRef: `Job #${prevJob}` });
+        return true;
+      });
+      if (!done) throw new Error(`Serial ${e.serialNumber} was just updated by someone else — refresh`);
+      if (stLive() && e.stJobId) {
+        try { await stJobNote(e.stJobId, `Consigned water heater serial ${e.serialNumber} RETURNED to warehouse ${etDate(now)} — not installed on this job.${args.reason ? ` Reason: ${args.reason}` : ""}`); } catch { /* best-effort */ }
+      }
       ctx.invalidateQueries();
       return { ok: true, message: `Returned ${e.serialNumber} to stock` };
     },

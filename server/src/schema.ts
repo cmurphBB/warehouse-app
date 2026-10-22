@@ -136,7 +136,7 @@ export const equipment = inv.table("equipment", {
   stCustomerId: bigint("st_customer_id", { mode: "number" }),
   stLocationId: bigint("st_location_id", { mode: "number" }),
   stEquipmentId: bigint("st_equipment_id", { mode: "number" }),
-  stSync: text("st_sync", { enum: ["n/a", "pending", "ok", "error"] }).notNull().default("n/a"),
+  stSync: text("st_sync", { enum: ["n/a", "pending", "syncing", "ok", "error"] }).notNull().default("n/a"),
   stError: text("st_error").notNull().default(""),
   createdAt: ts("created_at").notNull().defaultNow(),
   updatedAt: ts("updated_at").notNull().defaultNow(),

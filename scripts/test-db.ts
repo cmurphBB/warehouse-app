@@ -15,6 +15,7 @@ export async function makeTestDb() {
     .replace(/do \$\$[\s\S]*?end \$\$;/, "")
     .replace(/insert into storage\.buckets[\s\S]*?do nothing;/, "");
   await pg.exec(ddl);
+  await pg.exec(readFileSync(new URL("../supabase/migrations/20261022181000_inventory_wh_serial_unique.sql", import.meta.url), "utf8"));
 
   // 2. Data (same conversion as the production import)
   const lite = new Database(":memory:");

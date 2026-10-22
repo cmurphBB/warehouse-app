@@ -69,3 +69,11 @@ export async function stCreateInstalledEquipment(u: { locationId: number; custom
   const r = await st(`equipmentsystems/v2/tenant/{tenant}/installed-equipment`, { method: "POST", body: JSON.stringify(body) });
   return { id: typeof r.id === "number" ? r.id : null };
 }
+
+/** Finds an existing installed-equipment record with this serial at the customer location (retry safety). */
+export async function stFindInstalledEquipmentBySerial(locationId: number, serialNumber: string): Promise<number | null> {
+  const want = serialNumber.trim().toUpperCase();
+  const r = await st(`equipmentsystems/v2/tenant/{tenant}/installed-equipment?locationIds=${locationId}&pageSize=500`);
+  const hit = (r.data ?? []).find((x: any) => String(x.serialNumber ?? "").trim().toUpperCase() === want);
+  return hit && typeof hit.id === "number" ? hit.id : null;
+}

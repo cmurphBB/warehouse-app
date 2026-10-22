@@ -59,9 +59,13 @@ export async function flushOutbox(db: any, limit = 15): Promise<{ sent: number; 
         out.sent++;
       } else {
         const detail = (await res.text()).slice(0, 500);
-        await db.update(t).set({ emailStatus: "failed", emailLastError: `Resend ${res.status}: ${detail}`, emailClaimedAt: null })
+        // Rate limit / server hiccup: put it back in the queue for the next sweep.
+        // Anything else (bad address, unverified sender…) needs a person.
+        const transient = res.status === 429 || res.status >= 500;
+        await db.update(t).set({ emailStatus: transient ? "queued" : "failed", emailLastError: `Resend ${res.status}: ${detail}${transient ? " — will retry automatically" : ""}`, emailClaimedAt: null })
           .where(and(eq(t.id, row.id), eq(t.emailStatus, "sending")));
         out.failed++;
+        if (transient) break; // don't hammer a rate-limited API
       }
     } catch (e) {
       // Network error: outcome unknown. Leave it "sending" — the stale-claim

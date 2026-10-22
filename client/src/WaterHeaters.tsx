@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { api, type ApiResponse } from "./api";
-import { useMe } from "./Auth";
+import { canManage, useMe } from "./Auth";
 
 type State = ApiResponse<typeof api, "getState">;
 type Equip = State["equipment"][number];
@@ -50,7 +50,18 @@ export function WaterHeaters({ data, onChanged, toast }: { data: State; onChange
     return [...r].sort((a, b) => (b.updated_at > a.updated_at ? 1 : -1));
   }, [units, filter, q]);
 
-  const retry = useMutation({ mutationFn: (id: number) => api.whRetrySt({ equipmentId: id }), onSuccess: (r) => { onChanged(); toast(r.message); }, onError: (e: Error) => toast(e.message) });
+  // If the job # was never verified at pull time, ST's customer must be confirmed by a manager first.
+  const retry = useMutation({
+    mutationFn: async (id: number) => {
+      const r = await api.whRetrySt({ equipmentId: id, confirmJob: false });
+      if (!r.needsConfirm) return r;
+      if (!canManage(me)) return { ...r, message: "A manager needs to confirm the ServiceTitan customer for this unit" };
+      if (!window.confirm(`${r.message}\n\nWrite the serial to that customer?`)) return { ...r, message: "Not written — nothing changed in ServiceTitan" };
+      return api.whRetrySt({ equipmentId: id, confirmJob: true });
+    },
+    onSuccess: (r) => { onChanged(); toast(r.message); },
+    onError: (e: Error) => toast(e.message),
+  });
 
   const stat = (label: string, n: number, f: Filter, alert = false) => (
     <button onClick={() => setFilter(f)} className="rounded-xl p-3 text-center" style={{ background: alert && n > 0 ? RED : filter === f ? NAVY : "var(--surface)", color: (alert && n > 0) || filter === f ? "#fff" : "var(--text)", border: "1px solid var(--border)" }}>
