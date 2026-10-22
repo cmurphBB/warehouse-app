@@ -1,0 +1,30 @@
+vehicle,label,year,make,model,vin_last6,van_type,template,action
+14,Empty,2020,Chrysler,2500 ProMaster,126000,TBD not in use,,"TBD — not in use, no location yet"
+33,Chad Conway-Bull,2021,Ford,F-150,C96687,Manager vehicle leaveout,,Leave out — per Chris
+34,Empty,2021,Nissan,Rogue,825582,Manager vehicle leaveout,,Leave out — per Chris
+35,Rogue (BROKEN GPS),2021,Nissan,Rogue,825612,Sales vehicle leaveout,,Leave out — per Chris
+35,Empty,2021,Nissan,Rogue,825612,Sales vehicle leaveout,,Leave out — duplicate GPS record of #35
+36,sold,2021,Ford,F-150,C96853,Manager vehicle leaveout,,Leave out — sold
+37,sold,2021,Ford,F-150,C96855,Manager vehicle leaveout,,Leave out — sold
+38,Delivery Ram,2022,Chrysler,2500,165088,Manager vehicle leaveout,,Leave out — per Chris
+39,Delivery Ram,2022,Chrysler,2500,165087,Manager vehicle leaveout,,Leave out — per Chris
+40,Pete Kelly,2021,Chrysler,1500 ProMaster,584166,HVAC service,HVAC Service,"STOCK — create location, copy HVAC Service template"
+41,Will Fitch,2022,Chrysler,2500 ProMaster,100639,HVAC service,HVAC Service,"STOCK — create location, copy HVAC Service template"
+42,Nick Pereira,2022,Chrysler,2500 ProMaster,100637,HVAC Install,HVAC Install,"STOCK — create location, copy HVAC Install template"
+43,Kenley Lessaint,2022,Chrysler,2500 ProMaster,100638,HVAC maintenance,HVAC Service,"STOCK — create location, copy HVAC Service template"
+44,Andre Dasilva,2022,Chrysler,2500 ProMaster,100634,HVAC install,HVAC Install,"STOCK — create location, copy HVAC Install template"
+45,Emilio Kamishlian,2022,Chrysler,2500 ProMaster,100636,HVAC install,HVAC Install,"STOCK — create location, copy HVAC Install template"
+49,Alex Pease,2023,Nissan,Rogue,180468,Sales vehicle leaveout,,Leave out — per Chris
+50,PJ Fay-Waite,2023,Chrysler,2500 ProMaster,551553,HVAC service,HVAC Service,"STOCK — create location, copy HVAC Service template"
+51,Jack O'Connor,2023,Ford,F-250,D63400,Manager vehicle leaveout,,Leave out — per Chris
+52,Zack Kelly,2024,Nissan,Rogue,719282,Sales vehicle leaveout,,Leave out — per Chris
+53,Install Helpers,2024,Ford,Maverick,B22883,Manager vehicle leaveout,,Leave out — per Chris
+54,Install Helper,2024,Ford,Maverick,B22515,Manager vehicle leaveout,,Leave out — per Chris
+55,Will Gordon,2024,Ford,Transit,B38793,Plumbing,Plumbing Van,"STOCK — create location, copy Plumbing Van template"
+56,Riley Beloli-Halpin,2024,Ford,Transit,B60995,HVAC Service,HVAC Service,"STOCK — create location, copy HVAC Service template"
+57,Alex Simmons,2024,Ford,Transit,B60631,Plumbing,Plumbing Van,"STOCK — create location, copy Plumbing Van template"
+58,Austin Briand,2024,Ford,Transit,B38988,Plumbing,Plumbing Van,"STOCK — create location, copy Plumbing Van template"
+59,Dan Pleiss,2024,Ford,Transit,B60922,Plumbing,Plumbing Van,"STOCK — create location, copy Plumbing Van template"
+60,Frank Derbes,2024,Ford,Transit,B60295,Plumbing,Plumbing Van,"STOCK — create location, copy Plumbing Van template"
+61,Jayden Tolbert,2024,Ford,Transit,B60326,HVAC service,HVAC Service,"STOCK — create location, copy HVAC Service template"
+62,Matt Murphy,2024,Ford,Transit,B61102,HVAC service,HVAC Service,"STOCK — create location, copy HVAC Service template"

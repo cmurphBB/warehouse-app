@@ -1,0 +1,738 @@
+BB Code,Item,Category (cleaned),Category (as uploaded),Type (suggested),Par — HVAC Install (per truck),Par — HVAC Service (per truck),Par — HVAC Warranty (per truck),Par — Plumbing Van (per truck),Plumbing Truck Bin,Carried On (of 4 truck types),WH Qty On Hand,WH Bin,WH Reorder Point (suggested = one full restock of each truck type that carries it),Supplier,Unit Cost,Flags / Notes
+CO2BAT,Kidde Battery Operated Carbon Monoxide CO2 Detector,Alarm,Alarm,Stock Part,1,1,2,1,2,4,,,5,,,
+1BM90,"1"" Black Malleable 90",BM,BM,Stock Part,4,2,,2,41,3,,,8,,,
+1BMCAP,"1"" Black Malleable Cap",BM,BM,Stock Part,1,1,,1,41,3,,,3,,,
+1BMCOUP,"1"" Black Malleable Coupling",BM,BM,Stock Part,1,1,,1,41,3,,,3,,,
+1BMT,"1"" Black Malleable Tee",BM,BM,Stock Part,1,1,,,,2,,,2,,,
+1BMU,"1"" Black Malleable Union",BM,BM,Stock Part,1,1,,1,41,3,,,3,,,
+1X3/4BMBUSH,"1"" x 3/4"" Black Malleable Bushing",BM,BM,Stock Part,,2,,,,1,,,2,,,
+1X3/4BMRDCR,"1"" x 3/4"" Black Malleable Coupling",BM,BM,Stock Part,4,2,,1,41,3,,,7,,,
+1X3/4BM90,"1"" x 3/4"" Black Malleable Reducing 90",BM,BM,Stock Part,2,2,,,,2,,,4,,,
+1/2BM45,"1/2"" Black Malleable 45",BM,BM,Stock Part,2,2,2,,,3,,,6,,,
+1/2BM90,"1/2"" Black Malleable 90",BM,BM,Stock Part,5,2,2,4,41,4,,,13,,,
+1/2BMCAP,"1/2"" Black Malleable Cap",BM,BM,Stock Part,2,2,2,2,41,4,,,8,,,
+1/2BMCOUP,"1/2"" Black Malleable Coupling",BM,BM,Stock Part,5,2,2,2,41,4,,,11,,,
+1/2BMP,"1/2"" Black Malleable Plug",BM,BM,Stock Part,,2,2,1,41,3,,,5,,,
+1/2BMST45,"1/2"" Black Malleable Street 45",BM,BM,Stock Part,5,2,2,,,3,,,9,,,
+1/2BMST90,"1/2"" Black Malleable Street 90",BM,BM,Stock Part,5,2,2,,,3,,,9,,,
+1/2BMT,"1/2"" Black Malleable Tee",BM,BM,Stock Part,4,4,2,1,41,4,,,11,,,
+1/2BMU,"1/2"" Black Malleable Union",BM,BM,Stock Part,4,4,2,1,41,4,,,11,,,
+,"1/2"" x 3/8"" Black Malleable Coupling",BM,BM,Stock Part,,,,2,41,1,,,2,,,
+,"1/2"" x 3/8"" Black Malleable Reducing 90",BM,BM,Stock Part,,,,1,41,1,,,1,,,
+3/4BM45,"3/4"" Black Malleable 45",BM,BM,Stock Part,4,2,2,,,3,,,8,,,
+3/4BM90,"3/4"" Black Malleable 90",BM,BM,Stock Part,4,2,2,4,41,4,,,12,,,
+3/4BMCAP,"3/4"" Black Malleable Cap",BM,BM,Stock Part,4,2,2,2,41,4,,,10,,,
+3/4BMCOUP,"3/4"" Black Malleable Coupling",BM,BM,Stock Part,6,2,2,2,41,4,,,12,,,
+3/4BMP,"3/4"" Black Malleable Plug",BM,BM,Stock Part,2,2,2,1,41,4,,,7,,,
+3/4BMST45,"3/4"" Black Malleable Street 45",BM,BM,Stock Part,6,2,2,,,3,,,10,,,
+3/4BMST90,"3/4"" Black Malleable Street 90",BM,BM,Stock Part,4,2,2,,,3,,,8,,,
+3/4BMT,"3/4"" Black Malleable Tee",BM,BM,Stock Part,4,2,2,1,41,4,,,9,,,
+3/4BMU,"3/4"" Black Malleable Union",BM,BM,Stock Part,4,2,2,1,41,4,,,9,,,
+3/4X1/2BMBUSH,"3/4"" x 1/2"" Black Malleable Bushing",BM,BM,Stock Part,2,2,,2,41,3,,,6,,,
+3/4X1/2BMRDCR,"3/4"" x 1/2"" Black Malleable Coupling",BM,BM,Stock Part,4,2,2,1,41,4,,,9,,,
+3/4X1/2BM90,"3/4"" x 1/2"" Black Malleable Reducing 90",BM,BM,Stock Part,4,2,,1,41,3,,,7,,,
+,"1 1/4"" PP 3 Way Valve w/ Drain",Ball Valve,Ball Valve,Stock Part,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,"1 1/4"" PP Ball Valve",Ball Valve,Ball Valve,Stock Part,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,"1"" PP 3 Way Valve w/ Drain",Ball Valve,Ball Valve,Stock Part,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,"1"" Press 3 Way Valve w Drain",Ball Valve,Ball Valve,Stock Part,,,,1,4,1,,,1,,,
+1PPBV,"1"" Press Ball Valve",Ball Valve,Ball Valve,Stock Part,2,2,,1,4,3,,,5,,,
+1/2BDDO,"1/2"" Boiler Drain Draw Off",Ball Valve,Ball Valve,Stock Part,2,2,1,2,4,4,,,7,,,
+,"1/2"" Press 3 Way Valve w Drain",Ball Valve,Ball Valve,Stock Part,,,,1,4,1,,,1,,,
+,"1/2"" Press Ball Valve",Ball Valve,Ball Valve,Stock Part,,,,4,4,1,,,4,,,
+1/2PPBV3/4P,"1/2"" Press Ball Valve with Drain",Ball Valve,Ball Valve,Stock Part,2,1,1,,,3,,,4,,,
+1/2PPBV,"1/2"" Propress Ball Valve",Ball Valve,Ball Valve,Stock Part,2,2,2,,,3,,,6,,,
+3/4BDDO,"3/4"" Boiler Drain Draw Off",Ball Valve,Ball Valve,Stock Part,2,2,1,2,4,4,,,7,,,
+,"3/4"" Press 3 Way Valve w Drain",Ball Valve,Ball Valve,Stock Part,,,,1,4,1,,,1,,,
+,"3/4"" Press Ball Valve",Ball Valve,Ball Valve,Stock Part,,,,2,4,1,,,2,,,
+3/4PPBV,"3/4"" Propress Ball Valve",Ball Valve,Ball Valve,Stock Part,2,2,1,,,3,,,5,,,
+9VBATTERY,9V Battery 2 Pack,Battery,Battery,Stock Part,1,1,4,,,3,,,6,,,
+AABATTERY,AA Battery,Battery,Battery,Stock Part,12,12,12,12,,4,,,48,,,
+AAABATTERY,AAA Battery,Battery,Battery,Stock Part,12,12,12,12,,4,,,48,,,
+48-13-7225,"1/4"" x 18"" Drill Bit",Bits,Bits,Equipment / Tool,1,,,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+49-22-5606,Hole Dozer 10PC,Bits,Bits,Equipment / Tool,1,,,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+48-20-7662,SDS Bit Set,Bits,Bits,Equipment / Tool,1,,,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+1X21/2BSNIP,"1"" x 2 1/2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,3,3,,1,29,3,,,7,,,
+1X2BSNIP,"1"" x 2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,3,3,,1,29,3,,,7,,,
+1X31/2BSNIP,"1"" x 3 1/2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,3,3,,1,29,3,,,7,,,
+1X3BSNIP,"1"" x 3"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,3,3,,1,29,3,,,7,,,
+1X41/2BSNIP,"1"" x 4 1/2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,3,3,,1,29,3,,,7,,,
+1X4BSNIP,"1"" x 4"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,3,3,,1,29,3,,,7,,,"NAME VARIANTS IN SOURCE: 1"" x 4"" BLack Steel Nipple | 1"" x 4"" Black Steel Nipple"
+1X51/2BSNIP,"1"" x 5 1/2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,3,3,,1,29,3,,,7,,,
+1X5BSNIP,"1"" x 5"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,3,3,,1,29,3,,,7,,,
+1X6BSNIP,"1"" x 6"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,3,3,,1,29,3,,,7,,,
+,"1"" x 7"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,1,29,1,,,1,,,
+,"1"" x 8"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,1,29,1,,,1,,,
+,"1"" x 9"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,1,29,1,,,1,,,
+1XCBSNIP,"1"" x Close Black Steel Nipple",Black Nips,Black Nips,Stock Part,3,3,,1,29,3,,,7,,,
+1/2X21/2BSNIP,"1/2"" x 2 1/2"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"1/2"" x 2 1/2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+1/2X2BSNIP,"1/2"" x 2"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"1/2"" x 2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+1/2X31/2BSNIP,"1/2"" x 3 1/2"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"1/2"" x 3 1/2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+1/2X3BMNIP,"1/2"" x 3"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"1/2"" x 3"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+1/2X41/2BSNIP,"1/2"" x 4 1/2"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"1/2"" x 4 1/2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+1/2X4BSNIP,"1/2"" x 4"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"1/2"" x 4"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+1/2X51/2BSNIP,"1/2"" x 5 1/2"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"1/2"" x 5 1/2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+1/2X5BSNIP,"1/2"" x 5"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"1/2"" x 5"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+1/2X6BSNIP,"1/2"" x 6"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"1/2"" x 6"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+1/2X7BSNIP,"1/2"" x 7"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,3,2,,,,2,,,5,,,
+1/2X8BSNIP,"1/2"" x 8"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,3,2,,,,2,,,5,,,
+1/2X9BSNIP,"1/2"" x 9"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,3,2,,,,2,,,5,,,
+1/2XCBSNIP,"1/2"" x Close Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"1/2"" x Close Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+1/2XSBSNIP,"1/2"" x Space Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"1/2"" x Space Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+3/4X21/2BSNIP,"3/4"" x 2 1/2"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"3/4"" x 2 1/2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+3/4X2BSNIP,"3/4"" x 2"" Black nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"3/4"" x 2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+3/4X31/2BSNIP,"3/4"" x 3 1/2"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"3/4"" x 3 1/2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+3/4X3BSNIP,"3/4"" x 3"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"3/4"" x 3"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+3/4X41/2BSNIP,"3/4"" x 4 1/2"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"3/4"" x 4 1/2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+3/4X4BSNIP,"3/4"" x 4"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"3/4"" x 4"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+3/4X51/2BSNIP,"3/4"" x 5 1/2"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"3/4"" x 5 1/2"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+3/4X5BSNIP,"3/4"" x 5"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"3/4"" x 5"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+3/4X6BSNIP,"3/4"" x 6"" Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"3/4"" x 6"" Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+3/4XCBSNIP,"3/4"" x Close Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"3/4"" x Close Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+3/4XSBSNIP,"3/4"" x Space Black Nipple",Black Nips,Black Nip,Stock Part,3,3,3,,,3,,,9,,,CATEGORY TYPO CLEANED
+,"3/4"" x Space Black Steel Nipple",Black Nips,Black Nips,Stock Part,,,,3,30,1,,,3,,,
+1/2PAUTOCOMBO,Press Boiler Feed and Backflow Preventer Combo,Boiler,Boiler,Stock Part,,1,1,,,2,,,2,,,
+TACO2ZV,"Taco 3/4"" Press Sentry Zone Valve",Boiler,Boiler,Stock Part,2,1,1,,,3,,,4,,,
+TACOHYVENT,Taco Hy Vent,Boiler / Thermo,Boiler / Thermo,Stock Part,,1,1,2,7,3,,,4,,,
+,"1/2"" Brass 90",Brass,Brass,Stock Part,,,,1,28,1,,,1,,,
+,"1/2"" Brass Coupling",Brass,Brass,Stock Part,,,,2,28,1,,,2,,,
+,"1/2"" x 3/4"" Coupling",Brass,Brass,Stock Part,,,,1,28,1,,,1,,,
+,"3/4"" Brass 90",Brass,Brass,Stock Part,,,,1,28,1,,,1,,,
+,"3/4"" Brass Tee",Brass,Brass,Stock Part,,,,1,28,1,,,1,,,
+34HCAP,"3/4"" Garden Hose Caps",Brass,Brass,Stock Part,10,10,,5,28,3,,,25,,,"CODE CONFLICT — SAME CODE ALSO USED FOR: 3/4"" garden hose caps w/ washers"
+34HCAP,"3/4"" Garden Hose Caps w/ Washers",Brass,Brass,Stock Part,,,10,,,1,,,10,,,"CODE CONFLICT — SAME CODE ALSO USED FOR: 3/4"" garden hose caps"
+,Brass Dishwasher Tailpiece,Brass,Brass,Stock Part,,,,1,24,1,,,1,,,
+,"3/4"" Coupling",Brass / Refrigeration,Brass / Refrigeration,Stock Part,6,,,1,28,2,,,7,,,NO BB CODE IN SOURCE
+,"1/2"" x 2"" Brass Nipple",Brass Nips,Brass Nips,Stock Part,,,,1,28,1,,,1,,,
+,"1/2"" x 3"" Brass Nipple",Brass Nips,Brass Nips,Stock Part,,,,1,28,1,,,1,,,
+,"1/2"" x 4"" Brass Nipple",Brass Nips,Brass Nips,Stock Part,,,,1,28,1,,,1,,,
+,"1/2"" x 6"" Brass Nipple",Brass Nips,Brass Nips,Stock Part,,,,1,28,1,,,1,,,
+115VCONDPUMP,115V Condensate Pump,Condensate,Condensate,Stock Part,1,1,1,,,3,,,3,,,
+,Condensation Pump with Neutralizer,Condensate,Condensate,Stock Part,,,,1,,1,,,1,,,
+NEUTPUMP,Neutralizer Pump,Condensate,Condensate,Stock Part,1,1,1,,,3,,,3,,,
+,"""Danger unsafe to operate stickers""",Consumables,Consumables,Consumable,,10,10,,,2,,,20,,,BB CODE IS '?' IN SOURCE
+,#5 Box Terry Rag,Consumables,Consumables,Consumable,,,,1,32,1,,,1,,,
+,#7 50#Blue Zip Ties (100 Pack),Consumables,Consumables,Consumable,,,1,,,1,,,1,,,NO BB CODE IN SOURCE
+,"1 1/2"" Plastic Tailpiece Washer",Consumables,Consumables,Consumable,,,,2,32,1,,,2,,,
+,1$ Paint Brush,Consumables,Consumables,Consumable,,,,1,31,1,,,1,,,
+1/2BMTEF,"1/2"" Blue Monster Tephlon Tape",Consumables,Consumables,Consumable,2,2,2,3,32,4,,,9,,,
+,"1/2"" Thick 7/8"" Copper OD x 6' Split ArmaFlex",Consumables,Consumables,Consumable,2,,2,,,2,,,4,,,NO BB CODE IN SOURCE
+SANDCLOTH,10 Yard Roll Abrasive Sand Cloth,Consumables,Consumables,Consumable,1,2,1,1,32,4,,,5,,,
+,"11"" Black Zip Ties Pack",Consumables,Consumables,Consumable,,,,1,47,1,,,1,,,
+20GCO2CART,12 Pack 20G CO2 Cartridges,Consumables,Consumables,Consumable,1,1,1,,,3,,,3,,,
+,14 oz. Plumbers Putty,Consumables,Consumables,Consumable,,,,1,31,1,,,1,,,
+,1738 Glue (16 oz),Consumables,Consumables,Consumable,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,1738 Glue (16oz),Consumables,Consumables,Consumable,,,1,,,1,,,1,,,NO BB CODE IN SOURCE
+,1738 Primer (16 oz),Consumables,Consumables,Consumable,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,1738 Primer (16oz),Consumables,Consumables,Consumable,,,1,,,1,,,1,,,NO BB CODE IN SOURCE
+25/8HOLESAW,"2 5/8"" Hole Saw",Consumables,Consumables,Consumable,,1,,,,1,,,1,,,
+GREASE,2 oz Plumbers Grease,Consumables,Consumables,Consumable,1,1,1,1,32,4,,,4,,,
+35/8HOLESAW,"3 5/8"" Hole Saw",Consumables,Consumables,Consumable,,1,,,,1,,,1,,,
+,"3"" x 7"" ""Gas Vent Below"" Sign (White)",Consumables,Consumables,Consumable,2,,,,,1,,,2,,,NO BB CODE IN SOURCE
+,"36"" Duct Ties",Consumables,Consumables,Consumable,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,"36"" Duct Ties (pack)",Consumables,Consumables,Consumable,,,1,,,1,,,1,,,NO BB CODE IN SOURCE
+,"36""x200' Carpet Protection Tape",Consumables,Consumables,Consumable,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,40 Gallon Contractor Trash Bags,Consumables,Consumables,Consumable,,,,1,47,1,,,1,,,
+40GALTRASH,40 Gallon Trash Bags,Consumables,Consumables,Consumable,,1,1,,,2,,,2,,,CODE CONFLICT — SAME CODE ALSO USED FOR: 40 gallon trash bags (box)
+40GALTRASH,40 Gallon Trash Bags (Box),Consumables,Consumables,Consumable,1,,,,,1,,,1,,,CODE CONFLICT — SAME CODE ALSO USED FOR: 40 gallon trash bags
+4x15CANVAS,4x15 Rubber Backed Canvas Drop Cloth,Consumables,Consumables,Consumable,3,,,,,1,,,3,,,
+RAG,5# Box Terry Cloth Rags,Consumables,Consumables,Consumable,2,2,2,,,3,,,6,,,
+,50 Pack Box Self Tap Screws,Consumables,Consumables,Consumable,,,,1,47,1,,,1,,,
+50EXTCORD,50' Extension Cord,Consumables,Consumables,Consumable,2,2,2,,,3,,,6,,,
+,636 Glue (16 oz),Consumables,Consumables,Consumable,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,636 Primer (16 oz),Consumables,Consumables,Consumable,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,"7"" 50# Blue Zip Ties (100 Pack)",Consumables,Consumables,Consumable,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,"9"" CI SawZall Blades",Consumables,Consumables,Consumable,,,,2,31,1,,,2,,,
+,9' x 12' Canvas Drop Cloth,Consumables,Consumables,Consumable,,,,1,47,1,,,1,,,
+,95/5 Silver Brite Solder,Consumables,Consumables,Consumable,,,,1,32,1,,,1,,,
+9x12CANVAS,9x12 Rubber Backed Canvas Drop Cloth,Consumables,Consumables,Consumable,2,,,,,1,,,2,,,
+,Air Intake Sticker,Consumables,Consumables,Consumable,,,,4,23,1,,,4,,,
+,Aluminum Foil Tape,Consumables,Consumables,Consumable,,,,1,47,1,,,1,,,
+ARBORBIT,Arbor Bit,Consumables,Consumables,Consumable,,1,1,,,2,,,2,,,
+,BB Air Intake Stickers,Consumables,Consumables,Consumable,5,5,20,,,3,,,30,,,BB CODE IS '?' IN SOURCE
+,BB Exhaust Stickers,Consumables,Consumables,Consumable,5,5,20,,,3,,,30,,,BB CODE IS '?' IN SOURCE
+BELECTAPE,Black Electrical Tape,Consumables,Consumables,Consumable,2,2,2,1,47,4,,,7,,,
+BLEAKDETS,Blue Leak Detector Spray Bottle,Consumables,Consumables,Equipment / Tool,1,1,1,1,47,4,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+BOOTY,Booties (Box),Consumables,Consumables,Consumable,2,2,2,,,3,,,6,,,
+,"Box 1 1/4"" Drywall Screws",Consumables,Consumables,Consumable,,,,1,47,1,,,1,,,
+,"Box 2 1/2"" Drywall Screws",Consumables,Consumables,Consumable,,,,1,47,1,,,1,,,
+,"Box 2"" Stainless Screws",Consumables,Consumables,Consumable,,,,1,,1,,,1,,,
+,"Brazing Rod 15% Stay-Silver .05""1/8""x20"" (Individual Sticks)",Consumables,Consumables,Consumable,5,,,,,1,,,5,,,NO BB CODE IN SOURCE
+BROOM,Broom & Dust Pan Combo,Consumables,Consumables,Consumable,1,1,1,1,,4,,,4,,,
+,Calci-Free Tankless Water Heater Flush Solution,Consumables,Consumables,Consumable,,,,2,,1,,,2,,,
+9X4CANVAS,Canvas Drop Cloth,Consumables,Consumables,Consumable,,4,4,,,2,,,8,,,
+,Clear Caulk - Gun,Consumables,Consumables,Consumable,,,,1,32,1,,,1,,,
+,Clear Caulk - Squeeze,Consumables,Consumables,Consumable,,,,1,31,1,,,1,,,
+CCAULK,Clear Caulking,Consumables,Consumables,Consumable,2,2,2,,,3,,,6,,,
+,Clear Silicone for the Gun,Consumables,Consumables,Consumable,,,,1,31,1,,,1,,,
+,Closet Shims,Consumables,Consumables,Consumable,,,,100,23,1,,,100,,,
+EVAPFOAM,Coil Cleaner Evap Foam Spray,Consumables,Consumables,Consumable,1,1,1,,,3,,,3,,,
+EVAPCLEANG,Coil Cleaner Evap Gallon,Consumables,Consumables,Consumable,,1,1,,,2,,,2,,,
+18TPIBANDBLADE,Compact Band Saw 18 TPI Blades,Consumables,Consumables,Consumable,,2,2,1,47,3,,,5,,,
+24TPIBANDBLADE,Compact Band Saw 24 TPI Blades,Consumables,Consumables,Consumable,2,2,2,1,47,4,,,7,,,
+,Drinking Water Spin Disc,Consumables,Consumables,Consumable,,,,4,,1,,,4,,,
+DUCTTAPE,Duct Tape,Consumables,Consumables,Consumable,1,1,1,1,31,4,,,4,,,
+EARPLUG,Ear Plugs,Consumables,Consumables,Consumable,,5,5,5,,3,,,15,,,
+,Exhaust Sticker,Consumables,Consumables,Consumable,,,,4,32,1,,,4,,,
+YFLUOLEAKDESS,Flourescent Leak Detector Spray,Consumables,Consumables,Equipment / Tool,,1,,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Flux,Consumables,Consumables,Consumable,,,,1,32,1,,,1,,,
+,Foam Fill Spray,Consumables,Consumables,Consumable,,,,1,31,1,,,1,,,
+FOAMINSTAPE,Foam Tite Tape,Consumables,Consumables,Consumable,1,1,1,,,3,,,3,,,
+ALUMTAPE,Foil Tape,Consumables,Consumables,Consumable,1,1,1,,,3,,,3,,,
+,Furnace Cement,Consumables,Consumables,Consumable,1,,1,,,2,,,2,,,NO BB CODE IN SOURCE
+,Gold Metal Multi Tool Blades,Consumables,Consumables,Consumable,,,,4,23,1,,,4,,,
+PDOPE,Gray Pipe Dope (1/2 Pint),Consumables,Consumables,Consumable,1,,,,,1,,,1,,,CODE CONFLICT — SAME CODE ALSO USED FOR: pipe dope
+GSPAINT,Gray Spray Paint,Consumables,Consumables,Consumable,1,1,1,,,3,,,3,,,
+,Grinder Wheels,Consumables,Consumables,Consumable,,,,1,47,1,,,1,,,
+HANDSANI,Hand Sanitizer,Consumables,Consumables,Consumable,1,1,1,,,3,,,3,,,
+SANIWIPE,Hand Wipes,Consumables,Consumables,Consumable,2,2,1,1,32,4,,,6,,,
+,Hercules Leak Detector 8oz Dauber Bottle,Consumables,Consumables,Equipment / Tool,2,,,,,1,,,,,,"NO BB CODE IN SOURCE; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+HER45-801,Hercules Megabubble Leak Detector,Consumables,Consumables,Equipment / Tool,,,2,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,High Temp Silicone,Consumables,Consumables,Consumable,1,1,1,,,3,,,3,,,BB CODE IS '?' IN SOURCE
+WASPKILL,Insect Repellant,Consumables,Consumables,Consumable,1,1,1,,,3,,,3,,,
+,Latex Gloves,Consumables,Consumables,Consumable,,,,1,47,1,,,1,,,
+LLATEXG,Latex Gloves (Box),Consumables,Consumables,Consumable,,1,1,,,2,,,2,,,CODE CONFLICT — SAME CODE ALSO USED FOR: xl latex gloves (box)
+,Length S Cleat,Consumables,Consumables,Consumable,4,,,,,1,,,4,,,NO BB CODE IN SOURCE
+LMAXIG,Maxi Flex Gloves 10 pack,Consumables,Consumables,Consumable,,2,1,,,2,,,3,,,CODE CONFLICT — SAME CODE ALSO USED FOR: xl maxi flex gloves (10 pack)
+,Milwaukee 74 Piece Driver Bit Kit,Consumables,Consumables,Consumable,,,,1,47,1,,,1,,,
+49-10-9112,Multi Tool Blades,Consumables,Consumables,Consumable,1,,,,,1,,,1,,,"MULTIPLE BB CODES FOR THIS NAME: 49-10-9112, MULTIBLADE"
+MULTIBLADE,Multi Tool Blades,Consumables,Consumables,Consumable,,4,,,,1,,,4,,,"MULTIPLE BB CODES FOR THIS NAME: 49-10-9112, MULTIBLADE"
+RETRT201BP,Nlog Blue Gasket & Thread Sealant,Consumables,Consumables,Consumable,1,,,,,1,,,1,,,
+,Pair of Maxi Flex Gloves,Consumables,Consumables,Consumable,,,,2,33,1,,,2,,,
+PDOPE,Pipe Dope,Consumables,Consumables,Consumable,,1,1,1,31,3,,,3,,,CODE CONFLICT — SAME CODE ALSO USED FOR: gray pipe dope (1/2 pint)
+,PVC Clear Primer,Consumables,Consumables,Consumable,,,,1,32,1,,,1,,,
+PVCGLUEQ,PVC Glue,Consumables,Consumables,Consumable,,1,,1,31,2,,,2,,,CODE CONFLICT — SAME CODE ALSO USED FOR: pvc glue (16 oz)
+PVCGLUEQ,PVC Glue (16 oz),Consumables,Consumables,Consumable,1,,1,,,2,,,2,,,CODE CONFLICT — SAME CODE ALSO USED FOR: pvc glue
+PVCPRIMEQ,PVC Primer,Consumables,Consumables,Consumable,,1,,,,1,,,1,,,CODE CONFLICT — SAME CODE ALSO USED FOR: pvc primer (16 oz)
+PVCPRIMEQ,PVC Primer (16 oz),Consumables,Consumables,Consumable,1,,1,,,2,,,2,,,CODE CONFLICT — SAME CODE ALSO USED FOR: pvc primer
+,R11 Flush,Consumables,Consumables,Consumable,2,,,,,1,,,2,,,NO BB CODE IN SOURCE
+,Rectangle BB Stickers,Consumables,Comsumables,Consumable,50,50,50,,,3,,,150,,,BB CODE IS '?' IN SOURCE; CATEGORY TYPO CLEANED
+,Rectorseal Cool Braze (8oz),Consumables,Consumables,Consumable,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,Round BB Stickers,Consumables,Consumables,Consumable,50,50,50,,,3,,,150,,,BB CODE IS '?' IN SOURCE
+,Rubber O-Ring Kit,Consumables,Consumables,Consumable,,,,1,31,1,,,1,,,
+MEDMETALBLADE,"Sawzall 6"" Metal Blades - 5 Pack",Consumables,Consumables,Consumable,1,,,,,1,,,1,,,CODE CONFLICT — SAME CODE ALSO USED FOR: sawzall med metal blades - 5 pack
+,"Sawzall 9"" Metal Blades - 5 Pack",Consumables,Consumables,Consumable,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,Sawzall Cast Iron Blades,Consumables,Consumables,Consumable,,,,1,47,1,,,1,,,
+MEDMETALBLADE,Sawzall Med Metal Blades - 5 Pack,Consumables,Consumables,Consumable,,3,3,1,32,3,,,7,,,"CODE CONFLICT — SAME CODE ALSO USED FOR: sawzall 6"" metal blades - 5 pack"
+WOODBLADE,Sawzall Wood Blades - 5 Pack,Consumables,Consumables,Consumable,1,3,3,1,32,4,,,8,,,
+,Sheet Panning,Consumables,Consumables,Consumable,2,,,,,1,,,2,,,NO BB CODE IN SOURCE
+,Shoe Covers,Consumables,Consumables,Consumable,,,,2,47,1,,,2,,,
+,Small Gray Paint Can,Consumables,Consumables,Consumable,,,,1,32,1,,,1,,,
+,Tankless Descale Solution,Consumables,Consumables,Consumable,,2,2,,,2,,,4,,,BB CODE IS '?' IN SOURCE
+,Valve Tags,Consumables,Consumables,Consumable,50,50,50,,,3,,,150,,,BB CODE IS '?' IN SOURCE
+WD40,WD-40,Consumables,Consumables,Consumable,1,2,2,,,3,,,5,,,
+,WD40,Consumables,Consumables,Consumable,,,,1,32,1,,,1,,,
+,Well Water Spin Disc,Consumables,Consumables,Consumable,,,,4,,1,,,4,,,
+,White Caulk - Gun,Consumables,Consumables,Consumable,,,,1,31,1,,,1,,,
+WCAULKSQ,White Caulk - Squeeze,Consumables,Consumables,Consumable,2,2,2,1,32,4,,,7,,,
+WCAULK,White Caulk - Tube,Consumables,Consumables,Consumable,2,2,2,,,3,,,6,,,
+WELECTAPE,White Electrical Tape,Consumables,Consumables,Consumable,1,1,1,,,3,,,3,,,
+,Wood Multi Tool Blades,Consumables,Consumables,Consumable,,,,2,23,1,,,2,,,
+LLATEXG,XL Latex Gloves (Box),Consumables,Consumables,Consumable,1,,,,,1,,,1,,,CODE CONFLICT — SAME CODE ALSO USED FOR: latex gloves (box)
+LMAXIG,XL Maxi Flex Gloves (10 pack),Consumables,Consumables,Consumable,1,,,,,1,,,1,,,CODE CONFLICT — SAME CODE ALSO USED FOR: maxi flex gloves 10 pack
+8X11/4DRYANCHORN,"100 Piece #10 x 1 1/4"" Plastic Anchor Kit",Consumables / Hand Tool / Hardware,Consumables / Hand Tool / Hardware,Consumable,1,1,,1,47,3,,,3,,,
+RPANCHOR,"1/4"" x 1"" Red Plastic Anchors Kit",Consumables / Hardware,Consumables / Hardware,Consumable,2,1,1,,,3,,,4,,,"APPEARS TWICE IN SAME LIST — QTYS SUMMED, VERIFY; NO BB CODE IN SOURCE"
+GLASSES,Safety Glasses,Consumables / Safety,Consumables / Safety,Consumable,2,2,2,2,33,4,,,8,,,NO BB CODE IN SOURCE
+,1 Pole Definitive Contact 30A 24V,Contactor,Contactor,Stock Part,,2,2,,,2,,,4,,,NO BB CODE IN SOURCE
+1PDPC,1 Pole Definitive Contact 40A 24V,Contactor,Contactor,Stock Part,,2,2,,,2,,,4,,,
+,2 Pole Definitive Contact 30A 24V,Contactor,Contactor,Stock Part,,2,2,,,2,,,4,,,NO BB CODE IN SOURCE
+2PDPC,2 Pole Definitive Contact 40A 24V,Contactor,Contactor,Stock Part,,2,2,,,2,,,4,,,
+,Inkinkerator Badger 5 Garbage Disposal,Disposal,Disposal,Stock Part,,,,1,23,1,,,1,,,
+,Insinkerator Badger 5 Disposal 3' Power Cord Assembly,Disposal,Disposal,Stock Part,,,,1,23,1,,,1,,,
+,"1/2"" Black Button Puch in Connector",Electrical,Electrical,Stock Part,10,,,,,1,,,10,,,NO BB CODE IN SOURCE
+BWNUT,100 Pack Blue Wire Nuts,Electrical,Electrical,Stock Part,,1,1,1,25,3,,,3,,,
+GWNUT,100 Pack Gray Wire Nuts,Electrical,Electrical,Stock Part,2,2,2,,,3,,,6,,,
+,100 Pack Orange Wire Nuts,Electrical,Electrical,Stock Part,,,,1,25,1,,,1,,,
+,100 Pack Red Wire Nuts,Electrical,Electrical,Stock Part,,,,1,,1,,,1,,,
+14/2MCWIRE,100' 14/2 MC Wire with Ground,Electrical,Electrical,Stock Part,1,1,1,,,3,,,3,,,
+120VSWIT,120 V Electrical Switch,Electrical,Electrical,Stock Part,1,1,1,,,3,,,3,,,
+SPP5,120-230V Hard Start Kit,Electrical,Electrical,Stock Part,,1,1,,,2,,,2,,,
+10816-Diversitech,200 Piece Terminal Kit,Electrical,Electrical,Stock Part,1,1,1,,,3,,,3,,,NO BB CODE IN SOURCE
+,220V Electrical Switch,Electrical,Electrical,Stock Part,1,,1,,,2,,,2,,,NO BB CODE IN SOURCE
+T24VTRANS,24 Volt Taco Transformer,Electrical,Electrical,Stock Part,2,2,2,,,3,,,6,,,
+3AFUSE,25 Pack 3A Plastic Fuses,Electrical,Electrical,Stock Part,1,1,1,,,3,,,3,,,
+5AFUSE,25 Pack 5A Plastic Fuses,Electrical,Electrical,Stock Part,1,1,1,,,3,,,3,,,
+18/8TSTAT,250' 18/8 Tstat Wire,Electrical,Electrical,Stock Part,1,1,1,,,3,,,3,,,
+3/4ACWHIP,"3/4"" x 6"" AC Whip",Electrical,Electrical,Stock Part,1,1,1,,,3,,,3,,,
+,"3/8"" Angle Romex Connectors",Electrical,Electrical,Stock Part,10,,,,,1,,,10,,,NO BB CODE IN SOURCE
+3/8ROMCON,"3/8"" Romex Wire Connectors",Electrical,Electrical,Stock Part,20,20,20,5,4,4,,,65,,,
+4X4BOX,4 x 4 Electrical Box,Electrical,Electrical,Stock Part,2,1,1,,,3,,,4,,,
+623-012,600 Count Blue Wire Nuts,Electrical,Electrical,Stock Part,1,,,,,1,,,1,,,
+SPP7S,90-277V 1/2-10HP Hard Start Kit,Electrical,Electrical,Stock Part,,1,1,,,2,,,2,,,
+SPP6,90-277V Hard Start Kit,Electrical,Electrical,Stock Part,,1,1,,,2,,,2,,,
+CONDOFSWIT,Condensate Pan Overflow Shut Off Switch,Electrical,Electrical,Stock Part,2,2,2,,,3,,,6,,,
+NONFDISCON,Non-Fused Disconnect,Electrical,Electrical,Stock Part,1,1,1,,,3,,,3,,,
+OWNUT,Orange Wire Nuts 100 Count Box,Electrical,Electrical,Stock Part,1,1,1,,,3,,,3,,,
+RWNUT,Red Wire Nuts 100 Count Box,Electrical,Electrical,Stock Part,1,1,1,,,3,,,3,,,
+,Honeywell FocusPro P200,Electrical / Thermo,Electrical / Thermo,Stock Part,2,,4,,,2,,,6,,,NO BB CODE IN SOURCE
+,Kohler K-GP876851,Faucet,Faucet,Stock Part,,,,1,4,1,,,1,,,
+,Moen 122 Posi-Temp Cartridge,Faucet,Faucet,Stock Part,,,,1,4,1,,,1,,,
+,Symmons Hot & Cold and Pressure Balancing Valve - TA 10,Faucet,Faucet,Stock Part,,,,2,4,1,,,2,,,
+,Symmons TA-25A,Faucet,Fuacet,Stock Part,,,,2,4,1,,,2,,,CATEGORY TYPO CLEANED
+,Symmons TA-25B,Faucet,Faucet,Stock Part,,,,2,4,1,,,2,,,
+,Symmons TA-4 Hot and Cold Replacement Seat Kit,Faucet,Faucet,Stock Part,,,,2,4,1,,,2,,,
+,"4.5"" x 10"" 5 Micron Sediment Scale Filter",Filters,Filters,Stock Part,,,,1,,1,,,1,,,
+,"4.5"" x 10"" CTO Filter",Filters,Filters,Stock Part,,,,1,,1,,,1,,,
+,Aquapure AP431,Filters,Filters,Stock Part,,,,1,,1,,,1,,,
+1GC,"1"" Gas Cock",Gas Cock,Gas Cock,Stock Part,2,1,,1,3,3,,,4,,,
+1/2GC,"1/2"" Gas Cock",Gas Cock,Gas Cock,Stock Part,4,4,4,2,3,4,,,14,,,
+3/4GC,"3/4"" Gas Cock",Gas Cock,Gas Cock,Stock Part,4,1,2,1,3,4,,,8,,,
+,"1/2"" x 48"" Gas Flex",Gas Flex,Gas Flex,Stock Part,,,,2,,1,,,2,,,
+,Lazy Hand Water Test Gauge,Gauge,Gauge,Stock Part,,,,1,31,1,,,1,,,
+,35/5 Capacitor,HVAC,HVAC,Stock Part,,3,3,,,2,,,6,,,NO BB CODE IN SOURCE
+,40/5 capacitor,HVAC,HVAC,Stock Part,,3,3,,,2,,,6,,,NO BB CODE IN SOURCE
+,45/5 Capacitor,HVAC,HVAC,Stock Part,,3,3,,,2,,,6,,,NO BB CODE IN SOURCE
+,55/5 Capacitor,HVAC,HVAC,Stock Part,,1,1,,,2,,,2,,,NO BB CODE IN SOURCE
+,60/5 Capacitor,HVAC,HVAC,Stock Part,,1,1,,,2,,,2,,,NO BB CODE IN SOURCE
+,70/5 Capacitor,HVAC,HVAC,Stock Part,,1,1,,,2,,,2,,,NO BB CODE IN SOURCE
+T200,Mars Turbo 200,HVAC,HVAC,Stock Part,,2,2,,,2,,,4,,,
+T200X,Mars Turbo 200X,HVAC,HVAC,Stock Part,,2,2,,,2,,,4,,,
+T200MINI,Turbo 200 Mini,HVAC,HVAC,Stock Part,,2,2,,,2,,,4,,,
+HR3B,"1/4"" charging hose set w/ ball valves",HVAC Tool,HVAC Tool,Equipment / Tool,1,,1,,,2,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+MH12006EAK,Appion MegaFlow Hose,HVAC Tool,HVAC Tool,Equipment / Tool,1,,,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+VP67,FieldPiece 6CFM Vacuum Pump,HVAC Tool,HVAC Tool,Equipment / Tool,1,,,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+SM482V,FieldPiece Digital Manifold,HVAC Tool,HVAC Tool,Equipment / Tool,1,,1,,,2,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Inspection Camera,HVAC Tool,HVAC Tool,Equipment / Tool,,1,,,,1,,,,,,"BB CODE IS '?' IN SOURCE; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+NVCNTF66,NAVAC Flaring Tool,HVAC Tool,HVAC Tool,Equipment / Tool,1,,,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+NVCNTB7,NAVAC Ratcheting Bender,HVAC Tool,HVAC Tool,Equipment / Tool,1,,,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+REFCHRGSCALE,Refrigerant Charging Scale,HVAC Tool,HVAC Tool,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Refrigerant Leak Detector,HVAC Tool,HVAC Tool,Equipment / Tool,,1,1,,,2,,,,,,"BB CODE IS '?' IN SOURCE; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+RECOVERYMACH,Refrigerant Recovery Machine,HVAC Tool,HVAC Tool,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Rigid Gas Sniffer,HVAC Tool,HVAC Tool,Equipment / Tool,1,1,1,,,3,,,,,,"BB CODE IS '?' IN SOURCE; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Smoke Pen,HVAC Tool,HVAC Tool,Equipment / Tool,,1,1,,,2,,,,,,"BB CODE IS '?' IN SOURCE; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Tankless Descale Kit,HVAC Tool,HVAC Tool,Equipment / Tool,,1,1,,,2,,,,,,"NO BB CODE IN SOURCE; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Teslong Inspection Camera,HVAC Tool,HVAC Tool,Equipment / Tool,,,1,,,1,,,,,,"BB CODE IS '?' IN SOURCE; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Testo Combustion Analyizer,HVAC Tool,HVAC Tool,Equipment / Tool,,1,1,,,2,,,,,,"BB CODE IS '?' IN SOURCE; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+VACPUMP,Vacuum Pump,HVAC Tool,HVAC Tool,Equipment / Tool,,1,1,,,2,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Viper foaming gun (hose style),HVAC Tool,HVAC Tool,Equipment / Tool,,1,1,,,2,,,,,,"NO BB CODE IN SOURCE; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Viperfoam & jet cleaner 50 (pump style),HVAC Tool,HHVAC Tool / HVAC Tool,Equipment / Tool,,1,1,,,2,,,,,,"CATEGORY TYPO CLEANED; NO BB CODE IN SOURCE; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Washing Machine Hose,HVAC Tool / Hand Tool,HVAC Tool / Hand Tool,Equipment / Tool,1,,1,,,2,,,,,,"BB CODE IS '?' IN SOURCE; NO BB CODE IN SOURCE; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,24' Fiberglass Extension Ladder,Hand Tool,Hand Tool,Equipment / Tool,1,,,,,1,,,,,,"BB CODE IS '?' IN SOURCE; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+4LAD,4' Ladder,Hand Tool,Hand Tool,Equipment / Tool,,1,,1,Bucket,2,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,50' Heavy Duty Garden Hose,Hand Tool,Hand Tool,Equipment / Tool,,,,1,Bucket,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+RUBHOSE,50' Rubber Garden Hose,Hand Tool,Hand Tool,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+6LAD,6' Ladder,Hand Tool,Hand Tool,Equipment / Tool,,1,1,1,Bucket,3,,,,,,"CODE CONFLICT — SAME CODE ALSO USED FOR: little giant 6' king kombo ladder; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+ACEREGULATOR,Acetylene Tank Set Up,Hand Tool,Hand Tool,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Basin Wrench,Hand Tool,Hand Tool,Equipment / Tool,,,,1,Bucket,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+CAULKGUN,Caulking Gun,Hand Tool,Hand Tool,Equipment / Tool,1,1,1,1,Bucket,4,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+DRAINGUN,CO2 Drain Gun,Hand Tool,Hand Tool,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+6LAD,Little Giant 6' King Kombo Ladder,Hand Tool,Hand Tool,Equipment / Tool,1,,,,,1,,,,,,"CODE CONFLICT — SAME CODE ALSO USED FOR: 6' ladder; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,"Milwaukee Close Cutters Set ; 1/2"", 3/4"", 1""",Hand Tool,Hand Tool,Equipment / Tool,,,,1,Bucket,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+2111-21,Milwaukee Rechargable Head Lamp,Hand Tool,Hand Tool,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Milwaukee Rechargeable Head Lamp,Hand Tool,Hand Tool,Equipment / Tool,,,,1,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+NITROREG,Nitrogen Regulator,Hand Tool,Hand Tool,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,"Raven 1/4 to 3/4"" Wrench for Symmons Diverter",Hand Tool,Hand Tool,Equipment / Tool,,,,1,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,"Raven 1/4"" - 3/4"" E-Z OUT Extractor Tool",Hand Tool,Hand Tool,Equipment / Tool,,,,1,Bucket,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Symmons Tool,Hand Tool,Hand Tool,Equipment / Tool,,,,1,Bucket,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+11/2CF&MR,"1 1/2"" Copper F&M Ring","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,6,6,6,,,3,,,18,,,
+11/2G2C,"1 1/2"" Galvanized 2 Hole Clips","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,6,6,6,6,36,4,,,24,,,
+11/2GF&MR,"1 1/2"" Galvanized F&M Ring","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,,6,6,,,2,,,12,,,
+,"1 1/2"" PVC Strap Hangers","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,,,,4,36,1,,,4,,,
+11/4C2C,"1 1/4"" Copper 2 Hole Clips","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,10,6,6,,,3,,,22,,,
+11/4CF&MR,"1 1/4"" Copper F&M Ring","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,10,6,,,,2,,,16,,,
+11/4GF&MR,"1 1/4"" Galvanized F&M Ring","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,6,6,,,,2,,,12,,,
+1C2C,"1"" Copper 2 Hole Clips","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,10,6,,4,36,3,,,20,,,
+1CBELL,"1"" Copper Bell Hanger","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,10,6,,4,20,3,,,20,,,
+1CF&MR,"1"" Copper F&M Ring","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,10,6,6,4,36,4,,,26,,,
+1GF&MR,"1"" Galvanized F&M Ring","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,10,6,6,,,3,,,22,,,
+1G2C,"1"" Galvanzied 2 Hole Clips","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,6,6,6,,,3,,,18,,,
+1/2C2C,"1/2"" Copper 2 Hole Clips","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,20,10,10,50,47,4,,,90,,,
+1/2CBELL,"1/2"" Copper Bell Hanger","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,5,5,5,10,36,4,,,25,,,
+1/2GF&MP,"1/2"" Copper F&M Plate","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,10,6,,,,2,,,16,,,
+1/2CF&MR,"1/2"" Copper F&M Ring","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,10,6,6,10,36,4,,,32,,,
+1/2GF&MR,"1/2"" Galvanized F&M Ring","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,10,6,6,10,36,4,,,32,,,
+1/2G2C,"1/2"" Galvanzied 2 Hole Clips","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,10,6,6,10,36,4,,,32,,,
+,"1/2"" x 3/4"" FLEX Talon Clips","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,,,,25,36,1,,,25,,,
+2GF&MR,"2"" Galvanized F&M Ring","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,6,6,6,,,3,,,18,,,
+2G2C,"2"" Galvanzied 2 Hole Clips","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,6,6,6,,,3,,,18,,,
+,"2"" PVC Strap Hangers","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,,,,4,36,1,,,4,,,
+,"2"" x 12"" Natick Hanger","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,8,,,,,1,,,8,,,NO BB CODE IN SOURCE
+3/4C2C,"3/4"" Copper 2 Hole Clips","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,20,6,6,50,47,4,,,82,,,
+3/4CBELL,"3/4"" Copper Bell Hanger","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,6,6,6,10,36,4,,,28,,,
+3/4CF&MR,"3/4"" Copper F&M Ring","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,6,6,6,6,36,4,,,24,,,
+3/4G2C,"3/4"" Galvanized 2 Hole Clips","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,6,6,6,6,36,4,,,24,,,
+3/4F&MR,"3/4"" Galvanized F&M Ring","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,10,6,6,4,36,4,,,26,,,
+3/8CF&MP,"3/8"" Copper F&M Plate","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,,10,10,10,36,3,,,30,,,
+3/8GF&MP,"3/8"" Galvalnized F&M Plate","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,20,10,,,,2,,,30,,,
+,"3/8"" Galvanized F&M Plate","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,,,,10,36,1,,,10,,,
+,"3/8"" Hose Clamps","Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,4,,,,,1,,,4,,,NO BB CODE IN SOURCE
+,HoldRite Expansion Tank Bracket,"Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,,,,1,2,1,,,1,,,
+,HoldRite SB3,"Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,6,,,,,1,,,6,,,NO BB CODE IN SOURCE
+,SB3 HoldRite Bracket,"Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,,,,5,,1,,,5,,,
+3/8SBH,Side Beam Hanger,"Hangers, Clips & Clamps","Hangers, Clips & Clamps",Stock Part,6,6,,,,2,,,12,,,
+50STRAP,50' 24 Gauge Steel Hanger Strap,"Hangers, Clips & Clamps / Pipe & Tubing","Hangers, Clips & Clamps / Pipe & Tubing",Stock Part,1,1,1,1,37,4,,,4,,,
+,"#10 x 3/4"" (5/16) Head Sheet Meatal Screws (500 Count)",Hardware,Hardware,Stock Part,1,,1,,,2,,,2,,,NO BB CODE IN SOURCE
+,"#6 1 1/4"" Drywall Screws 1lb Box",Hardware,Hardware,Stock Part,1,,1,,,2,,,2,,,NO BB CODE IN SOURCE
+,"#6 2"" Drywall Screws 1lb Box",Hardware,Hardware,Stock Part,1,,1,,,2,,,2,,,NO BB CODE IN SOURCE
+,"#8 1-1/4"" Phillips Head Exterior Screws 1lb Box",Hardware,Hardware,Stock Part,1,,1,,,2,,,2,,,NO BB CODE IN SOURCE
+8X11/4DRYZANCHOR,"#8 x 1 1/4"" Zinc Drywall Anchor Kit 50 pack",Hardware,Hardware,Stock Part,1,1,1,,,3,,,3,,,
+,"#8 x 3/4"" Taper Point Screws (500 Count)",Hardware,Hardware,Stock Part,1,,1,,,2,,,2,,,NO BB CODE IN SOURCE
+,"1/4"" x 2 1/4"" Hex-Washer-Head Tapcons (75 Piece)",Hardware,Hardware,Stock Part,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,"3/16"" x 1 1/4"" Star Flat Tapcons (75 Piece)",Hardware,Hardware,Stock Part,1,,,,,1,,,1,,,NO BB CODE IN SOURCE
+,"3/8"" Strut Nuts",Hardware,Hardware,Stock Part,10,,,,,1,,,10,,,NO BB CODE IN SOURCE
+,"3/8"" Strut Washers",Hardware,Hardware,Stock Part,10,,,,,1,,,10,,,NO BB CODE IN SOURCE
+,3/8” Washers 100 ct.,Hardware,Hardware,Stock Part,,,,1,3,1,,,1,,,
+3/8FWASH,"50 Pack 3/8"" Flat Washer",Hardware,Hardware,Stock Part,1,1,1,,,3,,,3,,,
+3/8HEXNUT,"50 Pack 3/8"" Hex Nut",Hardware,Hardware,Stock Part,2,2,2,2,3,4,,,8,,,
+,"1/2"" Vacuum Breaker",Hydro,Hydro,Stock Part,,,,1,3,1,,,1,,,
+,"3/4"" Vacuum Breaker",Hydro,Hydro,Stock Part,,,,1,,1,,,1,,,
+,Taco 007e Circulator Pump,Hydro,Hydro,Stock Part,,,,1,,1,,,1,,,
+,Taco 555-050RP Zone Head,Hydro,Hydro,Stock Part,,,,2,24,1,,,2,,,
+3/4100XLT&PV,Watts 100XL #150 Relief Valve,Hydro,Hydro,Stock Part,,1,1,1,,3,,,3,,,
+3/4PRESSSAFE,Watts 174A #30 Relief Valve,Hydro,Hydro,Stock Part,,1,1,1,3,3,,,3,,,
+3/4PZA,Watts 335 Series M x F #30 Relief Valve,Hydro,Hydro,Stock Part,,1,1,1,24,3,,,3,,,
+HYDROBRV,Watts 374A #30 Relief Valve,Hydro,Hydro,Stock Part,,1,1,1,24,3,,,3,,,
+,"Watts LFLLXL, 3/4"" Extended Shank T&P",Hydro,Hydro,Stock Part,,,,1,3,1,,,1,,,
+,Watts Press Water Feed & Backflow Preventer,Hydro,Hydro,Stock Part,,,,1,3,1,,,1,,,
+,"1 1/2"" x 16"" Plastic Double Flanged Tailpiece",Lavatory,Lavatory,Stock Part,,,,1,24,1,,,1,,,
+,"12"" x 3/8"" Comp x 1/2"" Female Lav Supply Line",Lavatory,Lavatory,Stock Part,,,,4,43,1,,,4,,,
+,"20"" x 3/8"" Comp x 1/2"" Female Lav Supply Line",Lavatory,Lavatory,Stock Part,,,,4,43,1,,,4,,,
+,"20"" x 3/8"" Comp x 3/8"" O.D. Compression",Lavatory,Lavatory,Stock Part,,,,2,,1,,,2,,,
+,"3/8"" Compression Hammer Arrestor",Lavatory,Lavatory,Stock Part,,,,1,25,1,,,1,,,
+,"60"" Washing Machine Supply Hose with Connectors",Lavatory,Lavatory,Stock Part,,,,2,46,1,,,2,,,
+,"8"" Plastic Direct Connect Tailpiece",Lavatory,Lavatory,Stock Part,,,,1,24,1,,,1,,,
+,Dishwasher Disposal Connection Clamp,Lavatory,Lavatory,Stock Part,,,,4,6,1,,,4,,,
+,Kitchen Sink Basket Strainer,Lavatory,Lavatory,Stock Part,,,,2,24,1,,,2,,,
+,Symmons Washer Machine Valve,Lavatory,Lavatory,Stock Part,,,,1,6,1,,,1,,,
+,Washing Machine Hammer Arrestors,Lavatory,Lavatory,Stock Part,,,,2,,1,,,2,,,
+,Watts Washer Maching Valve,Lavatory,Lavatory,Stock Part,,,,1,6,1,,,1,,,
+2771-20,Transfer Pump,Liberty 331 / M18,Liberty 331 / M18,Stock Part,1,1,1,1,43,4,,,4,,,
+49-16-2453,"1 1/4"" Copper Pro Press Jaw",M12,M12,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+49-16-2452B,"1"" Mega Press Jaw for M12 Press",M12,M12,Equipment / Tool,1,,,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,"1/2"" Mega Press Gas Jaw for M12 Press",M12,M12,Equipment / Tool,,,,1,44,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+49-16-2450B,"1/2"" Mega Press Jaw for M12 Press",M12,M12,Equipment / Tool,1,1,,,,2,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,"3/4"" Mega Press Gas Jaw for M12 Press",M12,M12,Equipment / Tool,,,,1,42,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+49-16-2451B,"3/4"" Mega Press Jaw for M12 Press",M12,M12,Equipment / Tool,1,1,,,,2,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Auto Cutter,M12,M12,Equipment / Tool,,,,1,44,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+48-11-2440,M12 Battery,M12,M12,Equipment / Tool,3,3,3,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+2473-22,Milwaukee M12 Press,M12,M12,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+2471-20,Milwaukee Tubing Cutter,M12,M12,Equipment / Tool,1,,,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+49-16-2462Z,Milwaukee ZoomLock Jaws,M12,M12,Equipment / Tool,1,,,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Press Tool,M12,M12,Equipment / Tool,,,,1,44,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,"Viega PEX 1"" Jaws M12",M12,M12,Equipment / Tool,,,,1,43,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Viega PEX 1/2” Jaws M12,M12,M12,Equipment / Tool,,,,1,42,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Viega PEX 3/4” Jaws M12,M12,M12,Equipment / Tool,,,,1,42,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Battery,M12 / M18,M12 / M18,Equipment / Tool,,,,6,"40, 44",1,,,,,,"APPEARS TWICE IN SAME LIST — QTYS SUMMED, VERIFY; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Hackzall,M12 / M18,M12 / M18,Equipment / Tool,,,,2,"44, 45",1,,,,,,"APPEARS TWICE IN SAME LIST — QTYS SUMMED, VERIFY; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+48-59-1807,Milwaukee Multi Charger,M12/M18,M12/M18,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Multi Charger,M12/M18,M18 / M12,Equipment / Tool,,,,1,Floor,1,,,,,,"CATEGORY TYPO CLEANED; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+2953-20,"1/4"" Hex Impact",M18,M18,Equipment / Tool,1,,,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,2 Gallon Wet/Dry Vacuum,M18,M18,Equipment / Tool,,,,1,44,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+0880-20,2 Gallon Wet/Dry Vacuum M18,M18,M18,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+2908-20,"5/8"" Hammer Drill",M18,M18,Equipment / Tool,1,,,,,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+2829-20,Compact Band Saw,M18,M18,Equipment / Tool,1,1,1,1,42,4,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Flood Light (Rover Hex) M18,M18,M18,Equipment / Tool,,,,1,43,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Grinder,M18,M18,Equipment / Tool,,,,1,45,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Hammer Drill,M18,M18,Equipment / Tool,,,,1,42,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Hex Impact Driver,M18,M18,Equipment / Tool,,,,1,40,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+48-11-1850,M18 Battery,M18,M18,Equipment / Tool,3,3,3,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+2853-20,Milwaukee Drill Driver,M18,M18,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+2625-20,Milwaukee M18 Hackzall,M18,M18,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+2626-20,Milwaukee Multi Tool,M18,M18,Equipment / Tool,,1,1,,,2,,,,,,"CODE CONFLICT — SAME CODE ALSO USED FOR: multi tool; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+2720-20,Milwaukee Sawzall,M18,M18,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+2361-20,Miwlaukee Flood Lights,M18,M18,Equipment / Tool,1,1,1,,,3,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+2626-20,Multi Tool,M18,M18,Equipment / Tool,1,,,,,1,,,,,,"CODE CONFLICT — SAME CODE ALSO USED FOR: milwaukee multi tool; TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Multitool,M18,M18,Equipment / Tool,,,,1,46,1,,,,,,"TOOL — BELONGS IN EQUIPMENT LOG, NOT PARTS STOCK"
+,Tankless flushing kit,Maintenance,Maintenance,Stock Part,,,,1,40,1,,,1,,,
+1GMP45,"1"" Gas Mega Press 45",Mega,Mega,Stock Part,2,2,,,,2,,,4,,,
+1GMP90,"1"" Gas Mega Press 90",Mega,Mega,Stock Part,4,2,,,,2,,,6,,,
+1GMPCAP,"1"" Gas Mega Press Cap",Mega,Mega,Stock Part,2,2,,,,2,,,4,,,
+1GMPCOUP,"1"" Gas Mega Press Coupling",Mega,Mega,Stock Part,2,2,,,,2,,,4,,,
+1GMPST45,"1"" Gas Mega Press Street 45",Mega,Mega,Stock Part,2,2,,,,2,,,4,,,
+1GMPST90,"1"" Gas Mega Press Street 90",Mega,Mega,Stock Part,2,2,,,,2,,,4,,,
+1GMPT,"1"" Gas Mega Press Tee",Mega,Mega,Stock Part,2,2,,,,2,,,4,,,
+1X3/4GMPSRDCR,"1"" x 3/4"" Gas Mega Press Slip Reducer",Mega,Mega,Stock Part,1,1,,,,2,,,2,,,
+1/2GMP45,"1/2"" Gas Mega Press 45",Mega,Mega,Stock Part,2,2,,,,2,,,4,,,
+1/2GMP90,"1/2"" Gas Mega Press 90",Mega,Mega,Stock Part,4,2,,4,5,3,,,10,,,
+1/2GMPCAP,"1/2"" Gas Mega Press Cap",Mega,Mega,Stock Part,2,2,,1,40,3,,,5,,,
+1/2GMPCOUP,"1/2"" Gas Mega Press Coupling",Mega,Mega,Stock Part,2,2,,2,40,3,,,6,,,
+1/2GMPST45,"1/2"" Gas Mega Press Street 45",Mega,Mega,Stock Part,2,2,,,,2,,,4,,,
+1/2GMPST90,"1/2"" Gas Mega Press Street 90",Mega,Mega,Stock Part,2,2,,2,40,3,,,6,,,
+1/2GMPT,"1/2"" Gas Mega Press Tee",Mega,Mega,Stock Part,2,2,,1,40,3,,,5,,,
+3/4GMP45,"3/4"" Gas Mega Press 45",Mega,Mega,Stock Part,2,2,,,,2,,,4,,,
+3/4GMP90,"3/4"" Gas Mega Press 90",Mega,Mega,Stock Part,4,2,,4,5,3,,,10,,,
+3/4GMPCAP,"3/4"" Gas Mega Press Cap",Mega,Mega,Stock Part,2,2,,1,40,3,,,5,,,
+3/4GMPCOUP,"3/4"" Gas Mega Press Coupling",Mega,Mega,Stock Part,2,2,,2,40,3,,,6,,,
+3/4GMPST45,"3/4"" Gas Mega Press Street 45",Mega,Mega,Stock Part,2,2,,,,2,,,4,,,
+3/4GMPST90,"3/4"" Gas Mega Press Street 90",Mega,Mega,Stock Part,2,2,,2,2,3,,,6,,,
+3/4GMPT,"3/4"" Gas Mega Press Tee",Mega,Mega,Stock Part,2,2,,1,40,3,,,5,,,
+3/4X1/2GMPRDCR,"3/4"" x 1/2"" Gas Mega Press Reducer",Mega,Mega,Stock Part,4,2,,,,2,,,6,,,
+,"3/4"" Press Union Angle Mix Thermostatic Mixing Valve w/ Temperature Gauge",Mixing Valve,Mixing Valve,Stock Part,,,,1,22,1,,,1,,,
+30004831C,Navien 3 Way Valve,Navien,Navien,Stock Part,,1,1,1,22,3,,,3,,,"MULTIPLE BB CODES FOR THIS NAME: 30004831C, 30026790A; PLUMBING PAR PLACED ON THIS CODE ROW — VERIFY IT IS THE SAME PART"
+30026790A,Navien 3 Way Valve,Navien,Navien,Stock Part,,,1,,,1,,,1,,,"MULTIPLE BB CODES FOR THIS NAME: 30004831C, 30026790A"
+,Navien Flame Rod KIT 30012226A,Navien,Navien,Stock Part,,,,1,22,1,,,1,,,
+30004680A,Navien Tankless Flame Rod Assembly (N30004680A),Navien,Navien,Stock Part,,1,1,,,2,,,2,,,
+30012950A,Outdoor Sensors,Navien,Navien,Stock Part,,,4,,,1,,,4,,,
+,"3/8"" barbed x 3/4"" Male Adapter",Nylon,Nylon,Stock Part,2,,,,,1,,,2,,,NO BB CODE IN SOURCE
+,"3/8"" Barbx 3/8"" Barb Coupling",Nylon,Nylon,Stock Part,2,,,,,1,,,2,,,NO BB CODE IN SOURCE
+,"1 1/2"" Dandy",PVC,PVC,Stock Part,,,,2,16,1,,,2,,,
+,"1 1/2"" PVC  ST Desanko",PVC,PVC,Stock Part,,,,2,18,1,,,2,,,
+,"1 1/2"" PVC 45",PVC,PVC,Stock Part,,,,2,16,1,,,2,,,
+,"1 1/2"" PVC 90",PVC,PVC,Stock Part,,,,6,,1,,,6,,,
+,"1 1/2"" PVC Cap",PVC,PVC,Stock Part,,,,2,16,1,,,2,,,
+,"1 1/2"" PVC Coupling",PVC,PVC,Stock Part,,,,2,16,1,,,2,,,
+,"1 1/2"" PVC Desanko",PVC,PVC,Stock Part,,,,2,19,1,,,2,,,
+,"1 1/2"" PVC End Clean Out",PVC,PVC,Stock Part,,,,1,15,1,,,1,,,
+,"1 1/2"" PVC Female Adapter",PVC,PVC,Stock Part,,,,1,15,1,,,1,,,
+,"1 1/2"" PVC Male Adapter",PVC,PVC,Stock Part,,,,1,15,1,,,1,,,
+,"1 1/2"" PVC P Trap Less Cleanout",PVC,PVC,Stock Part,,,,1,19,1,,,1,,,
+,"1 1/2"" PVC Slip Coupling",PVC,PVC,Stock Part,,,,4,10,1,,,4,,,
+,"1 1/2"" PVC Street 22",PVC,PVC,Stock Part,,,,2,17,1,,,2,,,
+,"1 1/2"" PVC Street 45",PVC,PVC,Stock Part,,,,2,12,1,,,2,,,
+,"1 1/2"" PVC Street 90",PVC,PVC,Stock Part,,,,2,13,1,,,2,,,
+,"1 1/2"" PVC Tee Wye",PVC,PVC,Stock Part,,,,2,14,1,,,2,,,
+,"1 1/2"" PVC Union P Trap",PVC,PVC,Stock Part,,,,4,12,1,,,4,,,
+,"1 1/2"" PVC Wye",PVC,PVC,Stock Part,,,,2,13,1,,,2,,,
+,"1 1/2"" x 1 1/4"" PVC Desanko",PVC,PVC,Stock Part,,,,2,16,1,,,2,,,
+,"1/2"" Female x 3/4"" PVC",PVC,PVC,Stock Part,,,,2,10,1,,,2,,,
+,"1/2"" PVC Female x 3/4"" Adapter",PVC,PVC,Stock Part,4,2,2,,,3,,,8,,,BB CODE IS '?' IN SOURCE
+,"2"" PVC 45",PVC,PVC,Stock Part,4,,4,2,16,3,,,10,,,NO BB CODE IN SOURCE
+,"2"" PVC 90",PVC,PVC,Stock Part,2,,2,6,,3,,,10,,,NO BB CODE IN SOURCE
+,"2"" PVC Cap",PVC,PVC,Stock Part,,,,1,16,1,,,1,,,
+,"2"" PVC Coupling",PVC,PVC,Stock Part,4,,4,2,15,3,,,10,,,NO BB CODE IN SOURCE
+,"2"" PVC Dandy",PVC,PVC,Stock Part,,,,2,12,1,,,2,,,
+,"2"" PVC End Clean Out",PVC,PVC,Stock Part,,,,1,16,1,,,1,,,
+,"2"" PVC Female Adapter",PVC,PVC,Stock Part,,,,1,13,1,,,1,,,
+,"2"" PVC LS 90",PVC,PVC,Stock Part,4,,4,,,2,,,8,,,NO BB CODE IN SOURCE
+,"2"" PVC Male Adapter",PVC,PVC,Stock Part,,,,1,,1,,,1,,,
+,"2"" PVC P Trap Less Cleanout",PVC,PVC,Stock Part,,,,2,14,1,,,2,,,
+,"2"" PVC P Trap With Cleanout",PVC,PVC,Stock Part,,,,1,15,1,,,1,,,
+,"2"" PVC Slip Coupling",PVC,PVC,Stock Part,4,,4,4,,3,,,12,,,NO BB CODE IN SOURCE
+,"2"" PVC St 45",PVC,PVC,Stock Part,4,,4,,,2,,,8,,,NO BB CODE IN SOURCE
+,"2"" PVC St 90",PVC,PVC,Stock Part,4,,4,,,2,,,8,,,NO BB CODE IN SOURCE
+,"2"" PVC Street 22",PVC,PVC,Stock Part,,,,2,13,1,,,2,,,
+,"2"" PVC Street 45",PVC,PVC,Stock Part,,,,2,14,1,,,2,,,
+,"2"" PVC Street 90",PVC,PVC,Stock Part,,,,2,16,1,,,2,,,
+,"2"" PVC Tee Wye",PVC,PVC,Stock Part,,,,2,11,1,,,2,,,
+,"2"" PVC Vent Screen",PVC,PVC,Stock Part,2,,2,,,2,,,4,,,NO BB CODE IN SOURCE
+,"2"" PVC Wye",PVC,PVC,Stock Part,,,,1,18,1,,,1,,,
+,"2"" x 1 1/2"" PVC Bushing",PVC,PVC,Stock Part,,,,2,,1,,,2,,,
+,"2"" x 1 1/2"" PVC Tee Wye",PVC,PVC,Stock Part,,,,1,18,1,,,1,,,
+,"2"" x 1 1/2"" PVC Wye",PVC,PVC,Stock Part,,,,1,17,1,,,1,,,
+,"2"" x 1 1/2"" x 1 1/2"" PVC Tee Wye",PVC,PVC,Stock Part,,,,1,17,1,,,1,,,
+3/4PVC45,"3/4"" PVC 45",PVC,PVC,Stock Part,6,6,8,,,3,,,20,,,
+3/4PVC90,"3/4"" PVC 90",PVC,PVC,Stock Part,6,6,8,,,3,,,20,,,
+,"3/4"" PVC Cap",PVC,PVC,Stock Part,4,,,,,1,,,4,,,NO BB CODE IN SOURCE
+3/4PVCCOUP,"3/4"" PVC Coupling",PVC,PVC,Stock Part,6,6,8,,,3,,,20,,,
+3/4PVCF,"3/4"" PVC Female Adapter",PVC,PVC,Stock Part,6,6,6,,,3,,,18,,,
+3/4PVCM,"3/4"" PVC Male Adapter",PVC,PVC,Stock Part,6,6,6,,,3,,,18,,,
+3/4PVCST45,"3/4"" PVC Street 45",PVC,PVC,Stock Part,6,6,6,,,3,,,18,,,
+3/4PVCST90,"3/4"" PVC Street 90",PVC,PVC,Stock Part,6,6,6,,,3,,,18,,,
+3/4PVCT,"3/4"" PVC Tee",PVC,PVC,Stock Part,6,6,6,,,3,,,18,,,
+,"3/4"" PVC Threaded Plug",PVC,PVC,Stock Part,4,,,,,1,,,4,,,NO BB CODE IN SOURCE
+,Condensate Trap w/ Switch,PVC,PVC,Stock Part,2,1,2,,,3,,,5,,,BB CODE IS '?' IN SOURCE
+,"3/4"" 90",PVC / Refrigeration,PVC / Refrigeration,Stock Part,6,,,4,10,2,,,10,,,NO BB CODE IN SOURCE
+,"2"" 1728 Vent Screen",PVC — 1738 Vent Fittings,1738,Stock Part,2,,2,,,2,,,4,,,CATEGORY TYPO CLEANED; NO BB CODE IN SOURCE
+,"2"" 1738 45",PVC — 1738 Vent Fittings,1738,Stock Part,4,,4,,,2,,,8,,,CATEGORY TYPO CLEANED; NO BB CODE IN SOURCE
+,"2"" 1738 90",PVC — 1738 Vent Fittings,1738,Stock Part,4,,4,,,2,,,8,,,CATEGORY TYPO CLEANED; NO BB CODE IN SOURCE
+,"2"" 1738 Access T",PVC — 1738 Vent Fittings,1738,Stock Part,2,,2,,,2,,,4,,,CATEGORY TYPO CLEANED; NO BB CODE IN SOURCE
+,"2"" 1738 Coupling",PVC — 1738 Vent Fittings,1738,Stock Part,4,,4,,,2,,,8,,,CATEGORY TYPO CLEANED; NO BB CODE IN SOURCE
+,"2"" 1738 LS 90",PVC — 1738 Vent Fittings,1738,Stock Part,4,,4,,,2,,,8,,,CATEGORY TYPO CLEANED; NO BB CODE IN SOURCE
+,"2"" 1738 St 45",PVC — 1738 Vent Fittings,1738,Stock Part,4,,4,,,2,,,8,,,CATEGORY TYPO CLEANED; NO BB CODE IN SOURCE
+,"2"" 1738 st 90",PVC — 1738 Vent Fittings,1738,Stock Part,4,,4,,,2,,,8,,,CATEGORY TYPO CLEANED; NO BB CODE IN SOURCE
+,"1/2"" Viega Pex 90",Pex,Pex,Stock Part,,,,6,22,1,,,6,,,
+,"1/2"" Viega Pex BV",Pex,Pex,Stock Part,,,,2,,1,,,2,,,
+,"1/2"" Viega Pex Coupling",Pex,Pex,Stock Part,,,,4,22,1,,,4,,,
+,"1/2"" Viega Pex Female Adapter",Pex,Pex,Stock Part,,,,2,,1,,,2,,,
+,"1/2"" Viega Pex Male Adapter",Pex,Pex,Stock Part,,,,2,,1,,,2,,,
+,"1/2"" Viega Pex Tee",Pex,Pex,Stock Part,,,,4,22,1,,,4,,,
+,"1/2"" Viega Pex x 3/8"" Compression AngleStop",Pex,Pex,Stock Part,,,,3,,1,,,3,,,
+,"1/2"" Viega Pex x 3/8"" Compression Straight Stop",Pex,Pex,Stock Part,,,,3,,1,,,3,,,
+,"1/2"" Viega Pex x Press Adapter",Pex,Pex,Stock Part,,,,4,22,1,,,4,,,
+,"1/2"" x 1/2"" x 3/4"" Viega Pex Tee",Pex,Pex,Stock Part,,,,2,22,1,,,2,,,
+,"3/4"" Viega Pex 90",Pex,Pex,Stock Part,,,,4,22,1,,,4,,,
+,"3/4"" Viega Pex Coupling",Pex,Pex,Stock Part,,,,4,22,1,,,4,,,
+,"3/4"" Viega Pex Tee",Pex,Pex,Stock Part,,,,2,22,1,,,2,,,
+,"3/4"" Viega Pex x Press Adapter",Pex,Pex,Stock Part,,,,2,,1,,,2,,,
+,"3/4"" x 1/2"" Viega Pex Coupling",Pex,Pex,Stock Part,,,,2,,1,,,2,,,
+,"3/4"" x 3/4"" x 1/2"" Viega Pex Tee",Pex,Pex,Stock Part,,,,2,,1,,,2,,,
+,"1/2"" Blue",Pex Pipe,Pex Pipe,Stock Part,,,,,,0,,,,,,QTY IS A LENGTH (100') — TREAT AS 1 COIL
+,"1/2"" Red",Pex Pipe,Pex Pipe,Stock Part,,,,,,0,,,,,,QTY IS A LENGTH (100') — TREAT AS 1 COIL
+,"1 1/2"" x 10' PVC Pipe",Pipe & Tubing,Pipe & Tubing,Stock Part,,,,1,,1,,,1,,,
+1LCOP10,"1"" x 10' L Type Copper Pipe",Pipe & Tubing,Pipe & Tubing,Stock Part,1,1,,1,,3,,,3,,,
+1/2LCOP10,"1/2"" x 10' L Type Copper Pipe",Pipe & Tubing,Pipe & Tubing,Stock Part,1,1,1,2,37,4,,,5,,,
+1/4COP50,"1/4"" x 50' Copper Tubing",Pipe & Tubing,Pipe & Tubing,Stock Part,,1,,1,,2,,,2,,,
+,"10' x 2"" 1738 Pipe",Pipe & Tubing,Pipe & Tubing,Stock Part,,,2,,,1,,,2,,,NO BB CODE IN SOURCE
+,"10' x 2"" PVC Pipe",Pipe & Tubing,Pipe & Tubing,Stock Part,,,2,,,1,,,2,,,NO BB CODE IN SOURCE
+,"2"" x 10' PVC Pipe",Pipe & Tubing,Pipe & Tubing,Stock Part,,,,1,,1,,,1,,,
+3/4LCOP10,"3/4"" x 10' L Type Copper Pipe",Pipe & Tubing,Pipe & Tubing,Stock Part,2,2,2,2,37,4,,,8,,,
+3/4PVC10,"3/4"" x 10' PVC Pipe",Pipe & Tubing,Pipe & Tubing,Stock Part,1,1,2,1,39,4,,,5,,,
+3/8POLY50,"3/8"" x 50' Roll Vinyl Tubing",Pipe & Tubing,Pipe & Tubing,Stock Part,1,1,1,1,38,4,,,4,,,
+3/8TROD6,"3/8"" x 6' Threaded Rod",Pipe & Tubing,Pipe & Tubing,Stock Part,4,2,2,2,37,4,,,10,,,
+,"1 1/2"" Dollar Plug",Plug,Plug,Stock Part,,,,2,,1,,,2,,,
+,"2"" Dollar Plug",Plug,Plug,Stock Part,,,,2,,1,,,2,,,
+,"1 1/4"" PP 45",Propress,Propress,Stock Part,2,,,,,1,,,2,,,NO BB CODE IN SOURCE
+,"1 1/4"" PP 90",Propress,Propress,Stock Part,4,,,,,1,,,4,,,NO BB CODE IN SOURCE
+,"1 1/4"" PP Coupling",Propress,Propress,Stock Part,2,,,,,1,,,2,,,NO BB CODE IN SOURCE
+,"1 1/4"" pp male adapter",Propress,Propress,Stock Part,2,,,,,1,,,2,,,NO BB CODE IN SOURCE
+,"1 1/4"" PP ST 45",Propress,Propress,Stock Part,2,,,,,1,,,2,,,NO BB CODE IN SOURCE
+,"1 1/4"" pp ST 90",Propress,Propress,Stock Part,2,,,,,1,,,2,,,NO BB CODE IN SOURCE
+,"1 1/4"" pp x 1 1/2"" male adapter",Propress,Propress,Stock Part,2,,,,,1,,,2,,,NO BB CODE IN SOURCE
+1PP45,"1"" Copper Propress 45",Propress,Propress,Stock Part,6,6,,2,37,3,,,14,,,
+1PP90,"1"" Copper Propress 90",Propress,Propress,Stock Part,6,6,,4,39,3,,,16,,,
+1PPCAP,"1"" Copper Propress Cap",Propress,Propress,Stock Part,2,6,,2,37,3,,,10,,,
+1PPCOUP,"1"" Copper Propress Coupling",Propress,Propress,Stock Part,6,6,,2,37,3,,,14,,,
+1PPF,"1"" Copper Propress Female Adapter",Propress,Propress,Stock Part,4,6,,2,37,3,,,12,,,
+1PPM,"1"" Copper Propress Male Adapter",Propress,Propress,Stock Part,4,6,,2,37,3,,,12,,,
+1PPSCOUP,"1"" Copper Propress Slip Coupling",Propress,Propress,Stock Part,4,6,,2,37,3,,,12,,,
+1PPST45,"1"" Copper Propress Street 45",Propress,Propress,Stock Part,4,4,,2,37,3,,,10,,,
+1PPST90,"1"" Copper Propress Street 90",Propress,Propress,Stock Part,4,4,,2,37,3,,,10,,,
+1PPT,"1"" Copper Propress Tee",Propress,Propress,Stock Part,2,2,,2,37,3,,,6,,,
+1X1/2PPRDCR,"1"" x 1/2"" Copper Propress Reducing Coupling",Propress,Propress,Stock Part,,2,,2,38,2,,,4,,,
+1X1/2PPSRDCR,"1"" x 1/2"" Copper Propress Slip Reducer",Propress,Propress,Stock Part,,2,,2,38,2,,,4,,,
+1X3/4PPRDCR,"1"" x 3/4"" Copper Propress Reducing Coupling",Propress,Propress,Stock Part,2,2,,2,38,3,,,6,,,
+1X3/4PPSRDCR,"1"" x 3/4"" Copper Propress Slip Reducer",Propress,Propress,Stock Part,2,2,,2,38,3,,,6,,,
+1X3/4PPT,"1"" x 3/4"" Copper Propress Tee",Propress,Propress,Stock Part,2,2,,2,39,3,,,6,,,
+,"1/2"" Copper Propress 45",Propress,Propress,Stock Part,,,,10,39,1,,,10,,,
+,"1/2"" Copper Propress 90",Propress,Propress,Stock Part,,,,10,39,1,,,10,,,
+,"1/2"" Copper Propress Cap",Propress,Propress,Stock Part,,,,6,39,1,,,6,,,
+,"1/2"" Copper Propress Coupling",Propress,Propress,Stock Part,,,,10,38,1,,,10,,,
+,"1/2"" Copper Propress Female Adapter",Propress,Propress,Stock Part,,,,10,38,1,,,10,,,
+,"1/2"" Copper Propress Male Adapter",Propress,Propress,Stock Part,,,,10,38,1,,,10,,,
+,"1/2"" Copper Propress Slip Coupling",Propress,Propress,Stock Part,,,,10,38,1,,,10,,,
+,"1/2"" Copper Propress Street 45",Propress,Propress,Stock Part,,,,10,38,1,,,10,,,
+,"1/2"" Copper Propress Street 90",Propress,Propress,Stock Part,,,,10,38,1,,,10,,,
+,"1/2"" Copper Propress Tee",Propress,Propress,Stock Part,,,,5,39,1,,,5,,,
+1/2PX3/4F,"1/2"" Press x 3/4"" Copper Propress Female Adapter",Propress,Propress,Stock Part,4,6,6,6,39,4,,,22,,,
+1/2PX3/4M,"1/2"" Press x 3/4"" Copper Propress Male Adapter",Propress,Propress,Stock Part,4,6,6,6,39,4,,,22,,,
+1/2PP45,"1/2"" Propress 45",Propress,Propress,Stock Part,10,6,6,,,3,,,22,,,
+1/2PP90,"1/2"" Propress 90",Propress,Propress,Stock Part,10,6,6,,,3,,,22,,,
+1/2PPCAP,"1/2"" Propress Cap",Propress,Propress,Stock Part,6,6,6,,,3,,,18,,,
+1/2PPSLIPCOUP,"1/2"" Propress Coupling less Stop",Propress,Propress,Stock Part,6,6,6,,,3,,,18,,,
+1/2PPCOUP,"1/2"" Propress Coupling with Stop",Propress,Propress,Stock Part,6,6,6,,,3,,,18,,,
+,"1/2"" Propress Dropear 90",Propress,Propress,Stock Part,,,,2,37,1,,,2,,,
+1/2PPF,"1/2"" Propress Female Adapter",Propress,Propress,Stock Part,4,4,4,,,3,,,12,,,
+1/2PPM,"1/2"" Propress Male Adapter",Propress,Propress,Stock Part,4,4,4,,,3,,,12,,,
+1/2PPST45,"1/2"" Propress Street 45",Propress,Propress,Stock Part,10,6,6,,,3,,,22,,,
+1/2PPST90,"1/2"" Propress Street 90",Propress,Propress,Stock Part,10,6,6,,,3,,,22,,,
+1/2PPT,"1/2"" Propress Tee",Propress,Propress,Stock Part,5,3,3,,,3,,,11,,,
+,"3/4"" Copper Propress 45",Propress,Propress,Stock Part,,,,10,38,1,,,10,,,
+,"3/4"" Copper Propress 90",Propress,Propress,Stock Part,,,,10,38,1,,,10,,,
+,"3/4"" Copper Propress Cap",Propress,Propress,Stock Part,,,,10,38,1,,,10,,,
+,"3/4"" Copper Propress Coupling",Propress,Propress,Stock Part,,,,10,38,1,,,10,,,
+,"3/4"" Copper Propress Female Adapter",Propress,Propress,Stock Part,,,,10,38,1,,,10,,,
+,"3/4"" Copper Propress Male Adapter",Propress,Propress,Stock Part,,,,10,17,1,,,10,,,
+,"3/4"" Copper Propress Slip Coupling",Propress,Propress,Stock Part,,,,10,17,1,,,10,,,
+,"3/4"" Copper Propress Street 45",Propress,Propress,Stock Part,,,,10,17,1,,,10,,,
+,"3/4"" Copper Propress Street 90",Propress,Propress,Stock Part,,,,10,17,1,,,10,,,
+,"3/4"" Copper Propress Tee",Propress,Propress,Stock Part,,,,4,39,1,,,4,,,
+3/4PP45,"3/4"" Propress 45",Propress,Propress,Stock Part,6,4,4,,,3,,,14,,,
+3/4PP90,"3/4"" Propress 90",Propress,Propress,Stock Part,10,6,6,,,3,,,22,,,
+3/4PPCAP,"3/4"" Propress Cap",Propress,Propress,Stock Part,6,2,2,,,3,,,10,,,
+3/4PPSCOUP,"3/4"" Propress Coupling less Stop",Propress,Propress,Stock Part,10,6,6,,,3,,,22,,,
+3/4PPCOUP,"3/4"" Propress Coupling with Stop",Propress,Propress,Stock Part,10,6,6,,,3,,,22,,,
+3/4PPF,"3/4"" Propress Female Adapter",Propress,Propress,Stock Part,10,4,4,,,3,,,18,,,
+3/4PPM,"3/4"" Propress Male Adapter",Propress,Propress,Stock Part,10,4,4,,,3,,,18,,,
+3/4PPST45,"3/4"" Propress Street 45",Propress,Propress,Stock Part,10,6,6,,,3,,,22,,,
+3/4PPST90,"3/4"" Propress Street 90",Propress,Propress,Stock Part,10,6,6,,,3,,,22,,,
+3/4PPT,"3/4"" Propress Tee",Propress,Propress,Stock Part,4,4,4,,,3,,,12,,,
+,"3/4"" x 1/2"" Copper Propress Reducing Coupling",Propress,Propress,Stock Part,,,,4,39,1,,,4,,,
+,"3/4"" x 1/2"" Copper Propress Slip Reducer",Propress,Propress,Stock Part,,,,4,39,1,,,4,,,
+,"3/4"" x 1/2"" Copper Propress Tee",Propress,Propress,Stock Part,,,,4,39,1,,,4,,,
+3/4X1/2PPRDCR,"3/4"" x 1/2"" Propress Coupling",Propress,Propress,Stock Part,10,4,4,,,3,,,18,,,
+3/4x1/2PPT,"3/4"" x 1/2"" Propress Reducing Tee",Propress,Propress,Stock Part,6,2,2,,,3,,,10,,,
+3/4X1/2PPSRDCR,"3/4"" x 1/2"" Propress Slip Coupling",Propress,Propress,Stock Part,,4,4,,,2,,,8,,,
+3/4X1/2X1/2PPT,"3/4"" x 1/2"" x 1/2"" Copper Propress Tee",Propress,Propress,Stock Part,2,2,2,2,37,4,,,8,,,
+,Taco 007e,Pump,Pump,Stock Part,1,1,1,,,3,,,3,,,BB CODE IS '?' IN SOURCE
+,"1"" Sharkbite Coupling",Push,Push,Stock Part,,,,1,18,1,,,1,,,
+1/2SBCAP,"1/2"" Shark Bite Cap",Push,Push,Stock Part,,2,2,4,17,3,,,8,,,
+,"1/2"" Shark Bite Coup",Push,Push,Stock Part,,2,2,,,2,,,4,,,BB CODE IS '?' IN SOURCE
+,"1/2"" Sharkbite Coupling",Push,Push,Stock Part,,,,2,17,1,,,2,,,
+,"1/4"" John Guest Coupling",Push,Push,Stock Part,,,,1,14,1,,,1,,,
+,"3/4"" Shark Bite Cap",Push,Push,Stock Part,,2,2,,,2,,,4,,,BB CODE IS '?' IN SOURCE
+,"3/4"" Shark Bite Coup",Push,Push,Stock Part,,2,2,,,2,,,4,,,BB CODE IS '?' IN SOURCE
+,"3/4"" Sharkbite Cap",Push,Push,Stock Part,,,,4,,1,,,4,,,
+,"3/4"" Sharkbite Coupling",Push,Push,Stock Part,,,,2,18,1,,,2,,,
+,"3/4"" x 7/8"" Coupling",Refrigeration,Refrigeration,Stock Part,6,,,,,1,,,6,,,NO BB CODE IN SOURCE
+,"3/8"" 90",Refrigeration,Refrigeration,Stock Part,6,,,,,1,,,6,,,NO BB CODE IN SOURCE
+,"3/8"" Couplings",Refrigeration,Refrigeration,Stock Part,6,,,,,1,,,6,,,NO BB CODE IN SOURCE
+,"3/8"" x 1/4"" Couplings",Refrigeration,Refrigeration,Stock Part,6,,,,,1,,,6,,,NO BB CODE IN SOURCE
+,"7/8"" 90",Refrigeration,Refrigeration,Stock Part,6,,,,,1,,,6,,,NO BB CODE IN SOURCE
+,"7/8"" Coupling",Refrigeration,Refrigeration,Stock Part,6,,,,,1,,,6,,,NO BB CODE IN SOURCE
+,Bullet Earplugs,Safety,Safety,Stock Part,10,,,,,1,,,10,,,NO BB CODE IN SOURCE
+,Face Masks - 50 Pack,Safety,Safety,Stock Part,,,,1,,1,,,1,,,
+EXTINGUISHER,Fire Extinguisher,Safety,Safety,Stock Part,1,1,1,1,,4,,,4,,,
+FIRSTAID,First Aid Kit,Safety,Safety,Stock Part,1,1,1,1,,4,,,4,,,
+,"1/2"" IPS Hose Bibb",Sill,Sill,Stock Part,,,,1,1,1,,,1,,,
+,"1/2"" Sweat Hose Bibb",Sill,Sill,Stock Part,,,,1,1,1,,,1,,,
+,"Prier 12"" Frost Free Sill Cock",Sill,Sill,Stock Part,,,,2,1,1,,,2,,,
+,"Prier 8"" Frost Free Sill Cock",Sill,Sill,Stock Part,,,,2,1,1,,,2,,,
+,"4"" x 24"" Smoke Pipe",Smoke Pipe,Smoke Pipe,Stock Part,,,,1,1,1,,,1,,,
+,"1/2"" PP x 1/4"" Compression Angle Stop",Stop,Stop,Stock Part,,,,2,21,1,,,2,,,
+,"1/2"" PP x 1/4"" Compression Straight Stop",Stop,Stop,Stock Part,,,,1,21,1,,,1,,,
+,"1/2"" PP x 3/8"" Compression Angle Stop",Stop,Stop,Stock Part,,,,4,1,1,,,4,,,
+,"1/2"" PP x 3/8"" Compression Straight Stop",Stop,Stop,Stock Part,,,,4,1,1,,,4,,,
+,"1/2"" Sweat x 3/8"" Compression Angle Stop",Stop,Stop,Stock Part,,,,2,1,1,,,2,,,
+,"1/2"" Sweat x 3/8"" Compression Angle Stop w/ 5"" Chrome Extension",Stop,Stop,Stock Part,,,,2,21,1,,,2,,,
+,"1/2"" Sweat x 3/8"" Compression Straight Stop",Stop,Stop,Stock Part,,,,2,1,1,,,2,,,
+,"1/2"" Sweat x 3/8"" Compression Straight Stop w/ 5"" Chrome Extension",Stop,Stop,Stock Part,,,,2,21,1,,,2,,,
+,"1/2"" Sweat 90",Sweat,Sweat,Stock Part,,,,6,21,1,,,6,,,
+,"1/2"" Sweat Coupling",Sweat,Sweat,Stock Part,,,,2,31,1,,,2,,,
+,"1/2"" Sweat Male Adapter",Sweat,Sweat,Stock Part,,,,6,31,1,,,6,,,
+,"1/2"" Sweat Slip Coupling",Sweat,Sweat,Stock Part,,,,2,21,1,,,2,,,
+,"1/2"" Sweat Street 90",Sweat,Sweat,Stock Part,,,,2,21,1,,,2,,,
+,"1/2"" Sweat Tee",Sweat,Sweat,Stock Part,,,,2,21,1,,,2,,,
+,"3/4"" Sweat 90",Sweat,Sweat,Stock Part,,,,6,27,1,,,6,,,
+,"3/4"" Sweat Cap",Sweat,Sweat,Stock Part,,,,6,2,1,,,6,,,
+,"3/4"" Sweat Coupling",Sweat,Sweat,Stock Part,,,,6,2,1,,,6,,,
+,"3/4"" Sweat Slip Coupling",Sweat,Sweat,Stock Part,,,,2,21,1,,,2,,,
+AMTEXTANK30,#30 Expansion Tank,Tank,Tank,Stock Part,,1,1,,,2,,,2,,,
+410A,410A,Tank,Tank,Stock Part,,1,1,,,2,,,2,,,CODE CONFLICT — SAME CODE ALSO USED FOR: 454b
+410A,454B,Tank,Tank,Stock Part,1,,1,,,2,,,2,,,CODE CONFLICT — SAME CODE ALSO USED FOR: 410a; NO BB CODE IN SOURCE
+NITROTANK,60 Nitrogen Tank,Tank,Tank,Stock Part,1,,,,,1,,,1,,,CODE CONFLICT — SAME CODE ALSO USED FOR: nitrogen tank
+ACETANK,Acetylene Tank,Tank,Tank,Stock Part,1,1,1,,,3,,,3,,,
+,Map Gas Tank,Tank,Tank,Stock Part,,,,1,2,1,,,1,,,
+NITROTANK,Nitrogen Tank,Tank,Tank,Stock Part,,1,1,,,2,,,2,,,CODE CONFLICT — SAME CODE ALSO USED FOR: 60 nitrogen tank
+RCTANK,Reclaim Tank,Tank,Tank,Stock Part,1,1,1,,,3,,,3,,,
+,ST5 Potable Water Expansion Tank,Tank,Tank,Stock Part,,,,1,,1,,,1,,,
+,"1 1/2"" Rubber Test Cap",Test Cap,Test Cap,Stock Part,,,,2,2,1,,,2,,,
+,"2"" Rubber Test Cap",Test Cap,Test Cap,Stock Part,,,,2,2,1,,,2,,,
+,#30 Expansion Tankn,Thermo,Thermo,Stock Part,,,,1,7,1,,,1,,,
+THERMO24,"24"" Thermo Couple",Thermo,Thermo,Stock Part,,1,1,,,2,,,2,,,
+THERMO36,"36"" Thermo Couple",Thermo,Thermo,Stock Part,,1,1,2,7,3,,,4,,,
+T87R1007R,Honeywell Round Thermostat,Thermo,Thermo,Stock Part,,1,4,,,2,,,5,,,
+,Honeywell T6 Pro Thermostat,Thermo,Thermo,Stock Part,,,,1,7,1,,,1,,,
+T6PRO,Honeywell T6 Thermostat,Thermo,Thermo,Stock Part,,1,1,,,2,,,2,,,
+,Non Programmable Round Thermostat,Thermo,Thermo,Stock Part,,,,1,Floor,1,,,1,,,
+TACOHEAD,Taco Zone Head,Thermo,Thermo,Stock Part,,2,2,,,2,,,4,,,
+,"12"" Toilet Supply Line",Toilet,Toilet,Stock Part,,,,2,8,1,,,2,,,
+,"20"" Toilet Supply Line",Toilet,Toilet,Stock Part,,,,2,8,1,,,2,,,
+,"Kohler 2"" Flapper with Float",Toilet,Toilet,Stock Part,,,,1,6,1,,,1,,,
+,Kohler Aqua Piston Gaskets,Toilet,Toilet,Stock Part,,,,2,7,1,,,2,,,
+,"Korky 3"" Flapper",Toilet,Toilet,Stock Part,,,,1,8,1,,,1,,,
+,"Korky Plus 2"" Flapper",Toilet,Toilet,Stock Part,,,,1,6,1,,,1,,,
+,PRO45 Toilet Fill Valve,Toilet,Toilet,Stock Part,,,,2,6,1,,,2,,,
+,Set Fast Johnny Bolts,Toilet,Toilet,Stock Part,,,,2,3,1,,,2,,,
+,Spanner Flange,Toilet,Toilet,Stock Part,,,,1,9,1,,,1,,,
+,Stainless Steel Split Repair Ring Flange,Toilet,Toilet,Stock Part,,,,2,8,1,,,2,,,
+,Toto G-Max Flapper,Toilet,Toilet,Stock Part,,,,2,25,1,,,2,,,
+,Wax Rings Less Horns,Toilet,Toilet,Stock Part,,,,2,25,1,,,2,,,
+,Wax Rings With Horns,Toilet,Toilet,Stock Part,,,,2,22,1,,,2,,,
+,White Toilet Caps,Toilet,Toilet,Stock Part,,,,1,7,1,,,1,,,
+,Braided Steel Washer Machine Hose,"Toilet, Faucet, Lavatory","Toilet, Faucet, Lavatory",Stock Part,,,,2,22,1,,,2,,,
+AT140A 1000,Honeywell 120V Transformer 40VA 60HZ 24V,Transformer,Transformer,Stock Part,1,1,1,,,3,,,3,,,
+,AB&A Toe Tap Drain in Polish Chrome,Tub & Shower,Tub & Shower,Stock Part,,,,1,,1,,,1,,,
+,Gerber Chrome Bath Waste & Overflow - 41-513,Tub & Shower,Tub & Shower,Stock Part,,,,1,,1,,,1,,,
+,Symmons Shower Valve w/ Trim,Tub & Shower,Tub & Shower,Stock Part,,,,1,,1,,,1,,,
+,Symmons Tub & Shower Valve w/ Trim,Tub & Shower,Tub & Shower,Stock Part,,,,1,,1,,,1,,,
+,LaMotte Water Tester,Water Test,Water Test,Stock Part,,,,1,43,1,,,1,,,

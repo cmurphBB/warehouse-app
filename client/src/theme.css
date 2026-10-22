@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Montserrat:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+@import "tailwindcss-safe-area";
+
+@theme {
+  --text-xs: 12px; --text-xs--line-height: 16px;
+  --text-sm: 14px; --text-sm--line-height: 20px;
+  --text-base: 16px; --text-base--line-height: 24px;
+  --text-lg: 18px; --text-lg--line-height: 28px;
+  --text-xl: 20px; --text-xl--line-height: 28px;
+  --text-2xl: 24px; --text-2xl--line-height: 32px;
+  --text-3xl: 30px; --text-3xl--line-height: 36px;
+  --font-display: "Archivo", system-ui, sans-serif;
+  --font-body: "Montserrat", system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+  --bg: #EEF1F6;
+  --surface: #FFFFFF;
+  --surface2: #E8EDF3;
+  --text: #0F1A2E;
+  --dim: #5B6B82;
+  --border: #D3DCE8;
+  --accent: #052A78;
+  --accent2: #FF6700;
+  --danger: #C1272D;
+  --success: #137333;
+  --warn: #B45309;
+  --radius: 14px;
+  --space-surface: var(--surface);
+  --space-surface-alt: var(--surface2);
+  --space-muted: var(--dim);
+  --space-border: var(--border);
+  --space-accent: var(--accent);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #0A1220;
+    --surface: #121E33;
+    --surface2: #1A2A47;
+    --text: #EEF2F8;
+    --dim: #9AA9C2;
+    --border: #263859;
+    --accent: #4D8DFF;
+    --accent2: #FF7A1A;
+  }
+}
+body { font-family: var(--font-body); background: var(--bg); color: var(--text); }
+.font-display { font-family: var(--font-display); }
