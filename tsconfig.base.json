@@ -19,6 +19,7 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "incremental": true,
-    "tsBuildInfoFile": "./.tsbuildinfo"
+    "tsBuildInfoFile": "./.tsbuildinfo",
+    "allowImportingTsExtensions": true
   }
 }

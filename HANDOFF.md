@@ -1,3 +1,5 @@
+> **Superseded 2026-10-22:** this app now runs on Supabase + Vercel — see README.md. This file is kept as the Muse handoff record.
+
 # Blue Bear Inventory — Handoff for Claude
 
 **What this is:** the complete source + data of the "Blue Bear Inventory" app (warehouse + truck inventory for Blue Bear Plumbing, Heating & Air, Norwell MA), built as a hosted fullstack web app ("ts-space") on the Muse platform. The owner (Chris Murphy) likes this UI better than the earlier warehouse app and wants this project re-hosted on GitHub/Vercel. A separate earlier repo exists at `cmurphBB/bluebear-warehouse` — do not overwrite or merge into it; this is its own project.

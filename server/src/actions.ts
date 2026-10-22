@@ -1,6 +1,8 @@
-import { defineAction, z, type ActionsModule } from "@hatch/space-sdk";
 import { asc, desc, eq } from "drizzle-orm";
-import * as schema from "./schema";
+import * as schema from "./schema.ts";
+import { defineAction, z, type ActionsModule } from "./sdk.ts";
+import { mailLive } from "./mail.ts";
+import { stCreateInstalledEquipment, stFindJob, stJobNote, stLive } from "./servicetitan.ts";
 
 export const DEPARTMENTS = ["Pipe & Tubing", "Fittings", "Valves", "HVAC Parts", "Fixtures & Trim", "Pumps, Filters & Water", "Electrical & Controls", "Hardware & Hangers", "Consumables & Safety", "Other"] as const;
 export type Department = typeof DEPARTMENTS[number];
@@ -91,6 +93,10 @@ export function departmentForCategory(category: string): string {
   return "Other";
 }
 
+export function isWaterHeater(e: { category?: string | null; name?: string | null }): boolean {
+  return /water\s*heater/i.test(`${e.category ?? ""} ${e.name ?? ""}`);
+}
+
 export function resolveDepartment(category: string, explicit?: string): string {
   if (explicit && explicit.trim() && (DEPARTMENTS as readonly string[]).includes(explicit.trim())) return explicit.trim();
   return departmentForCategory(category);
@@ -106,7 +112,7 @@ const stagingLineOut = z.object({ id: z.number(), stagingId: z.number(), partId:
 const stagingOut = z.object({ id: z.number(), customer: z.string(), jobType: z.string(), jobDate: z.string(), truckLocationId: z.number().nullable(), truckName: z.string(), status: z.string(), notes: z.string(), created_at: z.string(), lines: z.array(stagingLineOut) });
 const techOut = z.object({ id: z.number(), techName: z.string(), partDescription: z.string(), qty: z.number(), urgency: z.string(), jobRef: z.string(), status: z.string(), notes: z.string(), imageUrl: z.string(), aiPartName: z.string(), aiEquipment: z.string(), aiConfidence: z.string(), aiNotes: z.string(), created_at: z.string() });
 const intakeOut = z.object({ id: z.number(), orderId: z.number().nullable(), vendor: z.string(), poNumber: z.string(), checkedBy: z.string(), verdict: z.string(), confidence: z.string(), invoiceImageUrl: z.string(), partImageUrl: z.string(), invoiceVendor: z.string(), invoicePoNumber: z.string(), invoiceParts: z.string(), physicalPart: z.string(), summary: z.string(), discrepancies: z.string(), recommendedAction: z.string(), created_at: z.string() });
-const equipmentOut = z.object({ id: z.number(), name: z.string(), category: z.string(), serialNumber: z.string(), assetTag: z.string(), brandModel: z.string(), status: z.string(), condition: z.string(), currentLocationId: z.number().nullable(), currentLocationName: z.string(), currentLocationKind: z.string(), assignedTo: z.string(), notes: z.string(), isConsigned: z.boolean(), consignmentOwner: z.string(), consignmentEmail: z.string(), consignmentValueCents: z.number(), consignmentNotes: z.string(), created_at: z.string(), updated_at: z.string() });
+const equipmentOut = z.object({ id: z.number(), name: z.string(), category: z.string(), serialNumber: z.string(), assetTag: z.string(), brandModel: z.string(), status: z.string(), condition: z.string(), currentLocationId: z.number().nullable(), currentLocationName: z.string(), currentLocationKind: z.string(), assignedTo: z.string(), notes: z.string(), isConsigned: z.boolean(), consignmentOwner: z.string(), consignmentEmail: z.string(), consignmentValueCents: z.number(), consignmentNotes: z.string(), jobNumber: z.string(), customerName: z.string(), pulledAt: z.string(), installedAt: z.string(), stSync: z.string(), stError: z.string(), stEquipmentId: z.number().nullable(), daysOut: z.number().nullable(), created_at: z.string(), updated_at: z.string() });
 const equipmentLogOut = z.object({ id: z.number(), equipmentId: z.number(), equipmentName: z.string(), equipmentRemoved: z.boolean(), action: z.string(), fromLocationId: z.number().nullable(), fromLocationName: z.string(), toLocationId: z.number().nullable(), toLocationName: z.string(), performedBy: z.string(), notes: z.string(), created_at: z.string() });
 const consignmentLogOut = z.object({ id: z.number(), equipmentId: z.number(), equipmentName: z.string(), equipmentRemoved: z.boolean(), serialNumber: z.string(), assetTag: z.string(), owner: z.string(), notifyEmail: z.string(), action: z.string(), fromLocationId: z.number().nullable(), fromLocationName: z.string(), toLocationId: z.number().nullable(), toLocationName: z.string(), performedBy: z.string(), notes: z.string(), jobRef: z.string(), emailStatus: z.string(), emailSentAt: z.string(), emailSubject: z.string(), emailBody: z.string(), emailAttempts: z.number(), emailQueuedAt: z.string(), emailLastError: z.string(), created_at: z.string() });
 
@@ -123,7 +129,7 @@ const getStateResponse = z.object({
   consignmentLogs: z.array(consignmentLogOut),
   consignmentByOwner: z.array(z.object({ owner: z.string(), email: z.string(), count: z.number(), valueCents: z.number(), locations: z.array(z.string()) })),
   partPrices: z.array(partPriceOut),
-  stats: z.object({ totalParts: z.number(), totalLocations: z.number(), lowStockCount: z.number(), openOrders: z.number(), stagingNeeded: z.number(), newTechRequests: z.number(), totalUnits: z.number(), intakeChecks: z.number(), intakeMismatches: z.number(), totalEquipment: z.number(), equipmentNeedsRepair: z.number(), equipmentMissing: z.number(), equipmentInUse: z.number(), equipmentAvailable: z.number(), pricedParts: z.number(), pricedLines: z.number(), unmatchedPricedLines: z.number(), totalConsigned: z.number(), consignmentPendingEmails: z.number(), consignmentQueuedEmails: z.number(), consignmentFailedEmails: z.number(), consignmentActionableEmails: z.number(), consignmentStuckEmails: z.number(), consignmentValueCents: z.number(), consignmentMoves: z.number() }),
+  stats: z.object({ totalParts: z.number(), totalLocations: z.number(), lowStockCount: z.number(), openOrders: z.number(), stagingNeeded: z.number(), newTechRequests: z.number(), totalUnits: z.number(), intakeChecks: z.number(), intakeMismatches: z.number(), totalEquipment: z.number(), equipmentNeedsRepair: z.number(), equipmentMissing: z.number(), equipmentInUse: z.number(), equipmentAvailable: z.number(), pricedParts: z.number(), pricedLines: z.number(), unmatchedPricedLines: z.number(), totalConsigned: z.number(), consignmentPendingEmails: z.number(), consignmentQueuedEmails: z.number(), consignmentFailedEmails: z.number(), consignmentActionableEmails: z.number(), consignmentStuckEmails: z.number(), consignmentValueCents: z.number(), consignmentMoves: z.number(), whInStock: z.number(), whPulled: z.number(), whPulledOverdue: z.number(), whStErrors: z.number(), stLive: z.boolean(), mailLive: z.boolean() }),
   warehouseDepartments: z.array(z.object({ department: z.string(), partCount: z.number(), stockRows: z.number(), totalUnits: z.number(), lowStockCount: z.number(), subcategories: z.array(z.object({ category: z.string(), count: z.number() })) })),
 });
 
@@ -215,6 +221,8 @@ async function recomputePricing(db: any): Promise<{ pricedLines: number; matched
     const avg = Math.round(obs.reduce((a, o) => a + o.unitCostCents, 0) / obs.length);
     const sorted = [...obs].sort((a, b) => b.dateMs - a.dateMs || b.lineId - a.lineId);
     const last = sorted[0]!;
+    // Skip unchanged parts — on Postgres each write is a network round trip.
+    if (p.avgCostCents === avg && p.lastCostCents === last.unitCostCents && p.priceCount === obs.length && p.lastVendor === last.vendor && p.lastPricedAt === last.date) continue;
     await db.update(schema.parts).set({ avgCostCents: avg, lastCostCents: last.unitCostCents, priceCount: obs.length, lastVendor: last.vendor, lastPricedAt: last.date }).where(eq(schema.parts.id, p.id));
   }
   return { pricedLines, matchedLines, unmatched, partsPriced: obsByPart.size };
@@ -306,7 +314,7 @@ async function buildState(ctx: any): Promise<GetState> {
   const equipMap: Map<number, any> = new Map(equipmentRows.map((e: any) => [e.id, e] as [number, any]));
   const equipmentOutList = equipmentRows.map((e: any) => {
     const loc = e.currentLocationId ? locMap.get(e.currentLocationId) : null;
-    return { id: e.id, name: e.name, category: e.category, serialNumber: e.serialNumber ?? "", assetTag: e.assetTag ?? "", brandModel: e.brandModel ?? "", status: e.status, condition: e.condition ?? "good", currentLocationId: e.currentLocationId ?? null, currentLocationName: loc?.name ?? "Unassigned", currentLocationKind: loc?.kind ?? "", assignedTo: e.assignedTo ?? "", notes: e.notes ?? "", isConsigned: (e.isConsigned ?? 0) === 1, consignmentOwner: e.consignmentOwner ?? "", consignmentEmail: e.consignmentEmail ?? "", consignmentValueCents: e.consignmentValueCents ?? 0, consignmentNotes: e.consignmentNotes ?? "", created_at: e.createdAt.toISOString(), updated_at: e.updatedAt.toISOString() };
+    return { id: e.id, name: e.name, category: e.category, serialNumber: e.serialNumber ?? "", assetTag: e.assetTag ?? "", brandModel: e.brandModel ?? "", status: e.status, condition: e.condition ?? "good", currentLocationId: e.currentLocationId ?? null, currentLocationName: loc?.name ?? "Unassigned", currentLocationKind: loc?.kind ?? "", assignedTo: e.assignedTo ?? "", notes: e.notes ?? "", isConsigned: (e.isConsigned ?? 0) === 1, consignmentOwner: e.consignmentOwner ?? "", consignmentEmail: e.consignmentEmail ?? "", consignmentValueCents: e.consignmentValueCents ?? 0, consignmentNotes: e.consignmentNotes ?? "", jobNumber: e.jobNumber ?? "", customerName: e.customerName ?? "", pulledAt: e.pulledAt ? e.pulledAt.toISOString() : "", installedAt: e.installedAt ? e.installedAt.toISOString() : "", stSync: e.stSync ?? "n/a", stError: e.stError ?? "", stEquipmentId: e.stEquipmentId ?? null, daysOut: e.pulledAt && !e.installedAt ? Math.floor((Date.now() - e.pulledAt.getTime()) / 86_400_000) : null, created_at: e.createdAt.toISOString(), updated_at: e.updatedAt.toISOString() };
   });
   const equipmentLogsOut = equipLogs.slice(0, 200).map((l: any) => {
     const eq = equipMap.get(l.equipmentId);
@@ -328,8 +336,10 @@ async function buildState(ctx: any): Promise<GetState> {
     const removed = !eq || (l.equipmentRemoved ?? 0) === 1;
     return { id: l.id, equipmentId: l.equipmentId, equipmentName: eq?.name ?? ((l.equipmentName ?? "") || "Removed equipment"), equipmentRemoved: removed, serialNumber: eq?.serialNumber ?? (l.serialNumber ?? ""), assetTag: eq?.assetTag ?? (l.assetTag ?? ""), owner: l.owner ?? "", notifyEmail: l.notifyEmail ?? "", action: l.action, fromLocationId: l.fromLocationId ?? null, fromLocationName: fromLoc?.name ?? "", toLocationId: l.toLocationId ?? null, toLocationName: toLoc?.name ?? "", performedBy: l.performedBy ?? "", notes: l.notes ?? "", jobRef: l.jobRef ?? "", emailStatus: l.emailStatus ?? "pending", emailSentAt: l.emailSentAt ?? "", emailSubject: l.emailSubject ?? "", emailBody: l.emailBody ?? "", emailAttempts: l.emailAttempts ?? 0, emailQueuedAt: l.emailQueuedAt ?? "", emailLastError: l.emailLastError ?? "", created_at: d.toISOString() };
   });
-  // Consignment rollup by owner — what's consigned, where it sits, value on hand
-  const consignedRows = (equipmentRows as any[]).filter((e: any) => (e.isConsigned ?? 0) === 1);
+  // Consignment rollup by owner — what's consigned, where it sits, value on hand.
+  // Installed water heaters belong to the customer now, so they drop out.
+  const consignedRows = (equipmentRows as any[]).filter((e: any) => (e.isConsigned ?? 0) === 1 && e.status !== "installed");
+  const whRows = (equipmentRows as any[]).filter((e: any) => isWaterHeater(e) && (e.isConsigned ?? 0) === 1);
   const ownerMap = new Map<string, { owner: string; email: string; count: number; valueCents: number; locations: Set<string> }>();
   for (const e of consignedRows) {
     const owner = (e.consignmentOwner ?? "").trim() || "Unnamed owner";
@@ -380,21 +390,18 @@ async function buildState(ctx: any): Promise<GetState> {
     equipmentLogs: equipmentLogsOut,
     consignmentLogs: consignmentLogsOut,
     consignmentByOwner,
-    stats: { totalParts: parts.length, totalLocations: locs.length, lowStockCount, openOrders: orders.filter((o: any) => !["received", "cancelled"].includes(o.status)).length, stagingNeeded: staging.filter((s: any) => s.status === "needed" || s.status === "picking").length, newTechRequests: tech.filter((t: any) => t.status === "new").length, totalUnits: stock.reduce((a: number, s: any) => a + s.quantity, 0), intakeChecks: intakes.length, intakeMismatches: intakes.filter((v: any) => v.verdict === "mismatch").length, totalEquipment: equipmentRows.length, equipmentNeedsRepair: equipmentRows.filter((e: any) => e.status === "needs_repair" || e.status === "out_of_service").length, equipmentMissing: equipmentRows.filter((e: any) => e.status === "missing").length, equipmentInUse: equipmentRows.filter((e: any) => e.status === "in_use").length, equipmentAvailable: equipmentRows.filter((e: any) => e.status === "available").length, pricedParts: parts.filter((p: any) => (p.priceCount ?? 0) > 0).length, pricedLines: pricedLinesCount, unmatchedPricedLines, totalConsigned: consignedRows.length, consignmentPendingEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "pending").length, consignmentQueuedEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "queued" || l.emailStatus === "pending").length, consignmentFailedEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "failed").length, consignmentActionableEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "queued" || l.emailStatus === "pending" || l.emailStatus === "failed").length, consignmentStuckEmails: 0, consignmentValueCents: consignedRows.reduce((a: number, e: any) => a + (e.consignmentValueCents ?? 0), 0), consignmentMoves: (consignLogs as any[]).filter((l: any) => l.action !== "removed").length },
+    stats: { totalParts: parts.length, totalLocations: locs.length, lowStockCount, openOrders: orders.filter((o: any) => !["received", "cancelled"].includes(o.status)).length, stagingNeeded: staging.filter((s: any) => s.status === "needed" || s.status === "picking").length, newTechRequests: tech.filter((t: any) => t.status === "new").length, totalUnits: stock.reduce((a: number, s: any) => a + s.quantity, 0), intakeChecks: intakes.length, intakeMismatches: intakes.filter((v: any) => v.verdict === "mismatch").length, totalEquipment: equipmentRows.length, equipmentNeedsRepair: equipmentRows.filter((e: any) => e.status === "needs_repair" || e.status === "out_of_service").length, equipmentMissing: equipmentRows.filter((e: any) => e.status === "missing").length, equipmentInUse: equipmentRows.filter((e: any) => e.status === "in_use").length, equipmentAvailable: equipmentRows.filter((e: any) => e.status === "available").length, pricedParts: parts.filter((p: any) => (p.priceCount ?? 0) > 0).length, pricedLines: pricedLinesCount, unmatchedPricedLines, totalConsigned: consignedRows.length, consignmentPendingEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "pending").length, consignmentQueuedEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "queued" || l.emailStatus === "pending").length, consignmentFailedEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "failed").length, consignmentActionableEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "queued" || l.emailStatus === "pending" || l.emailStatus === "failed").length, consignmentStuckEmails: 0, consignmentValueCents: consignedRows.reduce((a: number, e: any) => a + (e.consignmentValueCents ?? 0), 0), consignmentMoves: (consignLogs as any[]).filter((l: any) => l.action !== "removed").length, whInStock: whRows.filter((e: any) => !e.pulledAt && !e.installedAt && e.status !== "installed").length, whPulled: whRows.filter((e: any) => e.pulledAt && !e.installedAt).length, whPulledOverdue: whRows.filter((e: any) => e.pulledAt && !e.installedAt && Date.now() - e.pulledAt.getTime() > 7 * 86_400_000).length, whStErrors: whRows.filter((e: any) => e.stSync === "error").length, stLive: stLive(), mailLive: mailLive() },
     warehouseDepartments,
   };
 }
 
-// ---- Consignment email outbox — compose-and-queue ONLY ----
-// The app composes the owner's notification itself, at the moment the move
-// is recorded, and stores the exact subject + body on the log row with
-// status "queued". That row IS the outbox: the UI shows the precise email.
-// The app NEVER sends mail itself and NEVER spawns a sender task. Sending
-// is done exclusively by an external dispatcher that reads the queued
-// entries (via dispatchConsignmentEmails), sends each one from Blue Bear
-// Outlook verbatim, and reports back: markConsignmentEmailSent on success,
-// markConsignmentEmailFailed (with the error text) on failure.
-const CONSIGN_ACTION_LABEL: Record<string, string> = { created: "Placed into inventory", checkout: "Checked out", checkin: "Checked in", transfer: "Transferred", repair_out: "Sent for repair", repair_in: "Back from repair", status_change: "Status change", note: "Note" };
+// ---- Consignment email outbox ----
+// The app composes the owner's notification at the moment the move is
+// recorded and stores the exact subject + body on the log row with status
+// "queued". That row IS the outbox: the UI shows the precise email. Sending
+// happens in server/src/mail.ts (Resend), right after the action and again
+// on a 15-minute sweep; see that file for the duplicate-send guards.
+const CONSIGN_ACTION_LABEL: Record<string, string> = { installed: "Installed at customer", created: "Placed into inventory", checkout: "Checked out", checkin: "Checked in", transfer: "Transferred", repair_out: "Sent for repair", repair_in: "Back from repair", status_change: "Status change", note: "Note" };
 
 export function composeConsignmentEmail(input: { equipmentName: string; serialNumber?: string; assetTag?: string; brandModel?: string; owner: string; action: string; fromName: string; toName: string; performedBy: string; jobRef: string; notes: string; atIso: string }): { subject: string; body: string } {
   const ident = [input.serialNumber ? `S/N ${input.serialNumber}` : "", input.assetTag ? `Tag ${input.assetTag}` : "", input.brandModel ?? ""].filter(Boolean).join(" • ");
@@ -423,18 +430,49 @@ export function composeConsignmentEmail(input: { equipmentName: string; serialNu
 // so the stored email stays accurate even if locations are renamed later.
 // Compose-and-queue only: this writes status "queued" + emailQueuedAt and
 // NEVER spawns a sender — the external dispatcher does the sending.
-async function insertConsignmentLog(db: any, args: { equipmentId: number; owner: string; notifyEmail: string; fromLocationId: number | null; toLocationId: number | null; action: string; performedBy: string; notes: string; jobRef: string }): Promise<{ id: number }> {
-  const email = (args.notifyEmail ?? "").trim();
+async function insertConsignmentLog(db: any, args: { equipmentId: number; owner: string; notifyEmail: string; fromLocationId: number | null; toLocationId: number | null; action: string; performedBy: string; notes: string; jobRef: string; skipEmail?: boolean; toNameOverride?: string }): Promise<{ id: number }> {
+  const email = args.skipEmail ? "" : (args.notifyEmail ?? "").trim();
   const equipRows = await db.select().from(schema.equipment);
   const locRows = await db.select().from(schema.locations);
   const eq = (equipRows as any[]).find((e: any) => e.id === args.equipmentId);
   const locName = (id: number | null) => id ? ((locRows as any[]).find((l: any) => l.id === id)?.name ?? "Unknown location") : null;
   const fromName = args.fromLocationId ? (locName(args.fromLocationId) ?? "Unknown location") : "— (new / first placement)";
-  const toName = args.toLocationId ? (locName(args.toLocationId) ?? "Unknown location") : "Unassigned";
+  const toName = args.toNameOverride || (args.toLocationId ? (locName(args.toLocationId) ?? "Unknown location") : "Unassigned");
   const nowIso = new Date().toISOString();
   const composed = email ? composeConsignmentEmail({ equipmentName: eq?.name ?? "Equipment", serialNumber: eq?.serialNumber ?? "", assetTag: eq?.assetTag ?? "", brandModel: eq?.brandModel ?? "", owner: args.owner, action: args.action, fromName, toName, performedBy: args.performedBy, jobRef: args.jobRef, notes: args.notes, atIso: nowIso }) : { subject: "", body: "" };
-  const [cl] = await db.insert(schema.consignmentLogs).values({ equipmentId: args.equipmentId, equipmentName: eq?.name ?? "", serialNumber: eq?.serialNumber ?? "", assetTag: eq?.assetTag ?? "", equipmentRemoved: 0, owner: args.owner, notifyEmail: email, fromLocationId: args.fromLocationId, toLocationId: args.toLocationId, action: args.action, performedBy: args.performedBy, notes: args.notes, jobRef: args.jobRef, emailStatus: email ? "queued" : "skipped", emailSentAt: "", emailSubject: composed.subject, emailBody: composed.body, emailAttempts: 0, emailQueuedAt: email ? nowIso : "", emailLastError: "" }).returning({ id: schema.consignmentLogs.id });
+  const [cl] = await db.insert(schema.consignmentLogs).values({ equipmentId: args.equipmentId, equipmentName: eq?.name ?? "", serialNumber: eq?.serialNumber ?? "", assetTag: eq?.assetTag ?? "", equipmentRemoved: 0, owner: args.owner, notifyEmail: (args.notifyEmail ?? "").trim(), fromLocationId: args.fromLocationId, toLocationId: args.toLocationId, action: args.action, performedBy: args.performedBy, notes: args.notes, jobRef: args.jobRef, emailStatus: email ? "queued" : "skipped", emailSentAt: "", emailSubject: composed.subject, emailBody: composed.body, emailAttempts: 0, emailQueuedAt: email ? nowIso : "", emailLastError: "" }).returning({ id: schema.consignmentLogs.id });
   return { id: cl!.id };
+}
+
+// Writes an installed consigned water heater onto the customer's installed
+// equipment in ServiceTitan. Idempotent: a unit already synced is left alone.
+// Failures are recorded on the unit (stSync = "error", stError) for retry.
+async function syncWaterHeaterToSt(db: any, equipmentId: number): Promise<{ status: string; message: string }> {
+  const [e] = await db.select().from(schema.equipment).where(eq(schema.equipment.id, equipmentId));
+  if (!e) return { status: "error", message: "Unit not found" };
+  if (!e.installedAt) return { status: e.stSync ?? "n/a", message: "Not installed yet — nothing to sync" };
+  if (!stLive()) return { status: "n/a", message: "ServiceTitan sync off" };
+  if (e.stEquipmentId) return { status: "ok", message: "Already on the ServiceTitan customer" };
+  try {
+    let { stJobId, stCustomerId, stLocationId } = e;
+    if (!stLocationId || !stCustomerId) {
+      const j = await stFindJob(e.jobNumber);
+      stJobId = j.jobId; stCustomerId = j.customerId; stLocationId = j.locationId;
+    }
+    const [brand] = String(e.brandModel ?? "").split(" ");
+    const created = await stCreateInstalledEquipment({
+      locationId: stLocationId, customerId: stCustomerId, name: e.name, installedOn: e.installedAt.toISOString(),
+      manufacturer: brand && e.brandModel.includes(" ") ? brand : "", model: e.brandModel, serialNumber: e.serialNumber,
+      memo: `CONSIGNED – ${e.consignmentOwner} – pulled ${e.pulledAt ? e.pulledAt.toISOString().slice(0, 10) : "?"} – job #${e.jobNumber}`,
+    });
+    if (stJobId) { try { await stJobNote(stJobId, `Consigned water heater INSTALLED. Serial ${e.serialNumber} added to the customer's equipment.`); } catch { /* best-effort */ } }
+    await db.update(schema.equipment).set({ stEquipmentId: created.id, stJobId, stCustomerId, stLocationId, stSync: "ok", stError: "" }).where(eq(schema.equipment.id, equipmentId));
+    return { status: "ok", message: "serial added to the ServiceTitan customer" };
+  } catch (err) {
+    const msg = String((err as Error).message ?? err).slice(0, 500);
+    await db.update(schema.equipment).set({ stSync: "error", stError: msg }).where(eq(schema.equipment.id, equipmentId));
+    return { status: "error", message: `ServiceTitan sync failed: ${msg}` };
+  }
 }
 
 // Kept for backwards compatibility with any stored references. In the
@@ -1071,7 +1109,7 @@ export const Actions = {
         await insertConsignmentLog(db as any, { equipmentId: args.equipmentId, owner: args.consignmentOwner.trim(), notifyEmail: email, fromLocationId: null, toLocationId: eqRow.currentLocationId ?? null, action: "created", performedBy: args.performedBy.trim(), notes: args.consignmentNotes.trim() || "Marked as consigned — starting location recorded", jobRef: "" });
       }
       ctx.invalidateQueries();
-      return { ok: true, message: args.isConsigned ? "Consignment on — moves will be logged and an owner email queued for the external dispatcher" : "Consignment off — moves will no longer queue owner emails" };
+      return { ok: true, message: args.isConsigned ? "Consignment on — every move will be logged and emailed to the owner" : "Consignment off — moves will no longer queue owner emails" };
     },
   }),
   deleteEquipment: defineAction({
@@ -1157,7 +1195,7 @@ export const Actions = {
       const message = consignmentLogged
         ? !consignmentEmailQueued
           ? "Equipment movement logged — consignment move recorded (no owner email on file, notification skipped)"
-          : "Equipment movement logged — consignment email composed and queued for the external dispatcher"
+          : "Equipment movement logged — consignment email sent to the owner"
         : "Equipment movement logged";
       return { ok: true, message, consignmentLogged, consignmentEmailQueued };
     },
@@ -1242,7 +1280,7 @@ export const Actions = {
       // dispatcher. The app does not send it and spawns nothing.
       await db.update(schema.consignmentLogs).set({ emailStatus: "queued", emailSentAt: "", emailQueuedAt: new Date().toISOString(), emailLastError: "" }).where(eq(schema.consignmentLogs.id, args.logId));
       ctx.invalidateQueries();
-      return { ok: true, queued: true, message: "Re-queued — the external dispatcher will send it from Outlook and mark it sent here" };
+      return { ok: true, queued: true, message: "Re-queued — sending now" };
     },
   }),
   dispatchConsignmentEmails: defineAction({
@@ -1250,6 +1288,8 @@ export const Actions = {
     response: dispatchReportResponse,
     async handler(ctx, _args): Promise<z.infer<typeof dispatchReportResponse>> {
       const db = ctx.db<typeof schema>();
+      // On this platform the app sends via Resend: flush first, then report what's left.
+      const flushed = await ctx.mail.flush();
       // REPORT ONLY. This action never sends and never hands entries to an
       // internal sender (no spawned task, no approval wait). It simply
       // reports the entries currently queued for the external dispatcher,
@@ -1273,7 +1313,151 @@ export const Actions = {
       }
       ctx.invalidateQueries();
       const n = queuedEntries.length;
-      return { ok: true, pendingCount: n, queuedCount: n, recoveredCount: 0, queuedEntries, message: n === 0 ? "No consignment emails queued — the outbox is clear" : `${n} consignment email${n === 1 ? "" : "s"} queued for the external dispatcher — the app queues only; sending happens from Outlook outside the app` };
+      return { ok: true, pendingCount: n, queuedCount: n, queuedEntries, recoveredCount: flushed.sent, message: n === 0 ? (flushed.sent ? `Sent ${flushed.sent} — the outbox is clear` : "No consignment emails queued — the outbox is clear") : flushed.skipped ? `${n} consignment email${n === 1 ? "" : "s"} waiting — email sending isn't set up yet (RESEND_API_KEY / EMAIL_FROM)` : `Sent ${flushed.sent}, ${flushed.failed} failed — ${n} still waiting` };
+    },
+  }),
+
+  // ---- Water heater consignment (job-tied) + ServiceTitan write-back ----
+  // A consigned water heater is an equipment row with category "Water Heater",
+  // isConsigned = 1 and the supply house as owner. Its life:
+  //   whReceive  → in the warehouse (no email: the supply house dropped it off)
+  //   whPull     → leaves for a ServiceTitan job; pulledAt = the date the supply
+  //                house bills from; job note in ST; owner emailed
+  //   whInstall  → on the customer's home; serial written to the customer's
+  //                installed equipment in ST; owner emailed
+  //   whReturn   → pulled but not used; back to stock; ST note; owner told to void
+  stLookupJob: defineAction({
+    request: z.object({ jobNumber: z.string().min(1) }),
+    response: z.object({ live: z.boolean(), found: z.boolean(), customerName: z.string(), message: z.string() }),
+    async handler(_ctx, args) {
+      if (!stLive()) return { live: false, found: false, customerName: "", message: "ServiceTitan sync is off — job not checked" };
+      try {
+        const j = await stFindJob(args.jobNumber);
+        return { live: true, found: true, customerName: j.customerName, message: `Job #${args.jobNumber.trim()} · ${j.customerName || `customer ${j.customerId}`}` };
+      } catch (e) {
+        return { live: true, found: false, customerName: "", message: (e as Error).message };
+      }
+    },
+  }),
+
+  whReceive: defineAction({
+    request: z.object({
+      serialNumber: z.string().trim().min(4, "Serial # is required"),
+      model: z.string().trim().min(2, "Model # is required"),
+      brand: z.string().default(""),
+      gallons: z.string().default(""),
+      fuel: z.string().default(""),
+      supplyHouse: z.string().trim().min(1, "Supply house is required"),
+      supplyHouseEmail: z.string().default(""),
+      warehouseLocationId: z.number().nullable().default(null),
+      valueCents: z.number().int().min(0).default(0),
+      notes: z.string().default(""),
+      performedBy: z.string().default(""),
+    }),
+    response: z.object({ id: z.number(), message: z.string() }),
+    async handler(ctx, args) {
+      const db = ctx.db<typeof schema>();
+      const serial = args.serialNumber.toUpperCase();
+      const dupes = await db.select({ id: schema.equipment.id, status: schema.equipment.status }).from(schema.equipment).where(eq(schema.equipment.serialNumber, serial));
+      if (dupes.length > 0) throw new Error(`Serial ${serial} is already in the system`);
+      const name = ["Water Heater", args.gallons ? `${args.gallons} gal` : "", args.fuel, args.brand ? `(${args.brand})` : ""].filter(Boolean).join(" ");
+      const [r] = await db.insert(schema.equipment).values({
+        name, category: "Water Heater", serialNumber: serial, assetTag: "", brandModel: [args.brand.trim(), args.model.toUpperCase()].filter(Boolean).join(" "),
+        status: "available", condition: "new", currentLocationId: args.warehouseLocationId, assignedTo: "", notes: args.notes.trim(),
+        isConsigned: 1, consignmentOwner: args.supplyHouse.trim(), consignmentEmail: args.supplyHouseEmail.trim(), consignmentValueCents: args.valueCents, consignmentNotes: "Consigned water heater",
+      }).returning({ id: schema.equipment.id });
+      const id = r!.id;
+      await db.insert(schema.equipmentLogs).values({ equipmentId: id, equipmentName: name, equipmentRemoved: 0, action: "created", fromLocationId: null, toLocationId: args.warehouseLocationId, performedBy: args.performedBy, notes: `Consigned water heater received from ${args.supplyHouse.trim()}` });
+      await insertConsignmentLog(db, { equipmentId: id, owner: args.supplyHouse.trim(), notifyEmail: args.supplyHouseEmail, fromLocationId: null, toLocationId: args.warehouseLocationId, action: "created", performedBy: args.performedBy, notes: "Received into consigned stock", jobRef: "", skipEmail: true });
+      ctx.invalidateQueries();
+      return { id, message: `Received ${serial}` };
+    },
+  }),
+
+  whPull: defineAction({
+    request: z.object({ equipmentId: z.number(), jobNumber: z.string().trim().min(1, "Job # is required to pull a unit"), toLocationId: z.number().nullable().default(null), performedBy: z.string().default("") }),
+    response: z.object({ ok: z.boolean(), message: z.string() }),
+    async handler(ctx, args) {
+      const db = ctx.db<typeof schema>();
+      const [e] = await db.select().from(schema.equipment).where(eq(schema.equipment.id, args.equipmentId));
+      if (!e || !isWaterHeater(e) || e.isConsigned !== 1) throw new Error("That isn't a consigned water heater");
+      if (e.pulledAt || e.status === "installed") throw new Error(`Serial ${e.serialNumber} is already pulled for job #${e.jobNumber || "?"}`);
+      const now = new Date();
+      let st: { jobId: number; customerId: number; locationId: number; customerName: string } | null = null;
+      let stMsg = "ServiceTitan sync off";
+      if (stLive()) {
+        st = await stFindJob(args.jobNumber); // throws "Job # not found" → nothing changes
+        try {
+          await stJobNote(st.jobId, `Consigned water heater PULLED from warehouse ${now.toLocaleDateString("en-US", { timeZone: "America/New_York" })}. Serial ${e.serialNumber}, ${e.brandModel}${args.performedBy ? `, by ${args.performedBy}` : ""}.`);
+          stMsg = "job note added in ServiceTitan";
+        } catch { stMsg = "ServiceTitan job note failed (unit still pulled)"; }
+      }
+      const toLocationId = args.toLocationId ?? e.currentLocationId ?? null;
+      await db.update(schema.equipment).set({
+        status: "in_use", currentLocationId: toLocationId, assignedTo: args.performedBy, jobNumber: args.jobNumber, pulledAt: now,
+        customerName: st?.customerName ?? "", stJobId: st?.jobId ?? null, stCustomerId: st?.customerId ?? null, stLocationId: st?.locationId ?? null,
+        updatedAt: now,
+      }).where(eq(schema.equipment.id, e.id));
+      await db.insert(schema.equipmentLogs).values({ equipmentId: e.id, equipmentName: e.name, equipmentRemoved: 0, action: "checkout", fromLocationId: e.currentLocationId ?? null, toLocationId, performedBy: args.performedBy, notes: `Pulled for job #${args.jobNumber}` });
+      await insertConsignmentLog(db, { equipmentId: e.id, owner: e.consignmentOwner, notifyEmail: e.consignmentEmail, fromLocationId: e.currentLocationId ?? null, toLocationId, action: "checkout", performedBy: args.performedBy, notes: `Pulled for job #${args.jobNumber}${st?.customerName ? ` (${st.customerName})` : ""}. Please invoice against this serial from today's date.`, jobRef: `Job #${args.jobNumber}` });
+      ctx.invalidateQueries();
+      return { ok: true, message: `Pulled ${e.serialNumber} for job #${args.jobNumber} · ${stMsg}` };
+    },
+  }),
+
+  whInstall: defineAction({
+    request: z.object({ equipmentId: z.number(), installedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), performedBy: z.string().default("") }),
+    response: z.object({ ok: z.boolean(), message: z.string(), stSync: z.string() }),
+    async handler(ctx, args) {
+      const db = ctx.db<typeof schema>();
+      const [e] = await db.select().from(schema.equipment).where(eq(schema.equipment.id, args.equipmentId));
+      if (!e || !isWaterHeater(e) || e.isConsigned !== 1) throw new Error("That isn't a consigned water heater");
+      if (!e.pulledAt) throw new Error(`Serial ${e.serialNumber} hasn't been pulled for a job yet`);
+      if (e.installedAt) throw new Error(`Serial ${e.serialNumber} is already installed`);
+      const installedAt = args.installedOn ? new Date(`${args.installedOn}T12:00:00-05:00`) : new Date();
+      if (installedAt.getTime() > Date.now() + 86_400_000) throw new Error("Install date can't be in the future");
+      await db.update(schema.equipment).set({ status: "installed", installedAt, currentLocationId: null, stSync: stLive() ? "pending" : "n/a", stError: "", updatedAt: new Date() }).where(eq(schema.equipment.id, e.id));
+      await db.insert(schema.equipmentLogs).values({ equipmentId: e.id, equipmentName: e.name, equipmentRemoved: 0, action: "installed", fromLocationId: e.currentLocationId ?? null, toLocationId: null, performedBy: args.performedBy, notes: `Installed for job #${e.jobNumber}${e.customerName ? ` at ${e.customerName}` : ""}` });
+      await insertConsignmentLog(db, { equipmentId: e.id, owner: e.consignmentOwner, notifyEmail: e.consignmentEmail, fromLocationId: e.currentLocationId ?? null, toLocationId: null, toNameOverride: e.customerName ? `Customer: ${e.customerName}` : `Customer (job #${e.jobNumber})`, action: "installed", performedBy: args.performedBy, notes: `Installed ${installedAt.toLocaleDateString("en-US", { timeZone: "America/New_York" })}. Pulled ${e.pulledAt.toLocaleDateString("en-US", { timeZone: "America/New_York" })}.`, jobRef: `Job #${e.jobNumber}` });
+      const sync = await syncWaterHeaterToSt(db, e.id);
+      ctx.invalidateQueries();
+      return { ok: true, message: `Installed ${e.serialNumber} · ${sync.message}`, stSync: sync.status };
+    },
+  }),
+
+  whRetrySt: defineAction({
+    request: z.object({ equipmentId: z.number() }),
+    response: z.object({ ok: z.boolean(), message: z.string(), stSync: z.string() }),
+    async handler(ctx, args) {
+      const sync = await syncWaterHeaterToSt(ctx.db(), args.equipmentId);
+      ctx.invalidateQueries();
+      return { ok: sync.status === "ok", message: sync.message, stSync: sync.status };
+    },
+  }),
+
+  whReturn: defineAction({
+    request: z.object({ equipmentId: z.number(), toLocationId: z.number().nullable().default(null), reason: z.string().default(""), performedBy: z.string().default("") }),
+    response: z.object({ ok: z.boolean(), message: z.string() }),
+    async handler(ctx, args) {
+      const db = ctx.db<typeof schema>();
+      const [e] = await db.select().from(schema.equipment).where(eq(schema.equipment.id, args.equipmentId));
+      if (!e || !isWaterHeater(e) || e.isConsigned !== 1) throw new Error("That isn't a consigned water heater");
+      if (!e.pulledAt || e.installedAt) throw new Error(`Only pulled, not-installed units can be returned (${e.serialNumber} is ${e.installedAt ? "installed" : "in stock"})`);
+      const now = new Date();
+      if (stLive() && e.stJobId) {
+        try { await stJobNote(e.stJobId, `Consigned water heater serial ${e.serialNumber} RETURNED to warehouse ${now.toLocaleDateString("en-US", { timeZone: "America/New_York" })} — not installed on this job.${args.reason ? ` Reason: ${args.reason}` : ""}`); } catch { /* best-effort */ }
+      }
+      const toLocationId = args.toLocationId ?? null;
+      const prevJob = e.jobNumber;
+      await db.update(schema.equipment).set({
+        status: "available", currentLocationId: toLocationId, assignedTo: "", jobNumber: "", customerName: "", pulledAt: null,
+        stJobId: null, stCustomerId: null, stLocationId: null, updatedAt: now,
+        notes: [e.notes, `Returned ${now.toLocaleDateString("en-US", { timeZone: "America/New_York" })} from job #${prevJob}${args.reason ? `: ${args.reason}` : ""}`].filter(Boolean).join(" | "),
+      }).where(eq(schema.equipment.id, e.id));
+      await db.insert(schema.equipmentLogs).values({ equipmentId: e.id, equipmentName: e.name, equipmentRemoved: 0, action: "checkin", fromLocationId: e.currentLocationId ?? null, toLocationId, performedBy: args.performedBy, notes: `Returned from job #${prevJob} — not installed${args.reason ? ` (${args.reason})` : ""}` });
+      await insertConsignmentLog(db, { equipmentId: e.id, owner: e.consignmentOwner, notifyEmail: e.consignmentEmail, fromLocationId: e.currentLocationId ?? null, toLocationId, action: "checkin", performedBy: args.performedBy, notes: `Returned to consigned stock — NOT installed on job #${prevJob}. Please void or credit any charge for this serial.${args.reason ? ` Reason: ${args.reason}` : ""}`, jobRef: `Job #${prevJob}` });
+      ctx.invalidateQueries();
+      return { ok: true, message: `Returned ${e.serialNumber} to stock` };
     },
   }),
 

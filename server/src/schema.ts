@@ -1,13 +1,18 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+// Postgres port of the Muse SQLite schema. Every table lives in the
+// `inventory` schema of the blue-bear-warehouse Supabase project.
+import { bigint, integer, pgSchema, text, timestamp } from "drizzle-orm/pg-core";
 
-export const entries = sqliteTable("entries", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+const inv = pgSchema("inventory");
+const ts = (name: string) => timestamp(name, { withTimezone: true, mode: "date" });
+
+export const entries = inv.table("entries", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   text: text("text").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+  createdAt: ts("created_at").notNull().defaultNow(),
 });
 
-export const parts = sqliteTable("parts", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const parts = inv.table("parts", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   name: text("name").notNull(),
   sku: text("sku").notNull().default(""),
   category: text("category").notNull().default("General"),
@@ -21,38 +26,38 @@ export const parts = sqliteTable("parts", {
   priceCount: integer("price_count").notNull().default(0),
   lastVendor: text("last_vendor").notNull().default(""),
   lastPricedAt: text("last_priced_at").notNull().default(""),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+  createdAt: ts("created_at").notNull().defaultNow(),
 });
 
-export const locations = sqliteTable("locations", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const locations = inv.table("locations", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   name: text("name").notNull(),
   kind: text("kind", { enum: ["warehouse", "truck"] }).notNull().default("warehouse"),
   assignedTo: text("assigned_to").notNull().default(""),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+  createdAt: ts("created_at").notNull().defaultNow(),
 });
 
-export const stockLevels = sqliteTable("stock_levels", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const stockLevels = inv.table("stock_levels", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   partId: integer("part_id").notNull(),
   locationId: integer("location_id").notNull(),
   quantity: integer("quantity").notNull().default(0),
   minQty: integer("min_qty").notNull().default(2),
 });
 
-export const orders = sqliteTable("orders", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const orders = inv.table("orders", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   vendor: text("vendor").notNull(),
   poNumber: text("po_number").notNull().default(""),
   status: text("status", { enum: ["draft", "ordered", "in_transit", "partial", "received", "cancelled"] }).notNull().default("ordered"),
   eta: text("eta").notNull().default(""),
   notes: text("notes").notNull().default(""),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  updatedAt: ts("updated_at").notNull().defaultNow(),
 });
 
-export const orderLines = sqliteTable("order_lines", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const orderLines = inv.table("order_lines", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   orderId: integer("order_id").notNull(),
   partId: integer("part_id"),
   partName: text("part_name").notNull(),
@@ -62,19 +67,19 @@ export const orderLines = sqliteTable("order_lines", {
   unitCost: integer("unit_cost_cents").notNull().default(0),
 });
 
-export const stagingJobs = sqliteTable("staging_jobs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const stagingJobs = inv.table("staging_jobs", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   customer: text("customer").notNull(),
   jobType: text("job_type").notNull().default("Service"),
   jobDate: text("job_date").notNull().default(""),
   truckLocationId: integer("truck_location_id"),
   status: text("status", { enum: ["needed", "picking", "staged", "loaded", "done"] }).notNull().default("needed"),
   notes: text("notes").notNull().default(""),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+  createdAt: ts("created_at").notNull().defaultNow(),
 });
 
-export const stagingLines = sqliteTable("staging_lines", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const stagingLines = inv.table("staging_lines", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   stagingId: integer("staging_id").notNull(),
   partId: integer("part_id"),
   partName: text("part_name").notNull(),
@@ -83,8 +88,8 @@ export const stagingLines = sqliteTable("staging_lines", {
   sourceLocationId: integer("source_location_id"),
 });
 
-export const techRequests = sqliteTable("tech_requests", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const techRequests = inv.table("tech_requests", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   techName: text("tech_name").notNull(),
   partDescription: text("part_description").notNull(),
   qty: integer("qty").notNull().default(1),
@@ -97,35 +102,48 @@ export const techRequests = sqliteTable("tech_requests", {
   aiEquipment: text("ai_equipment").notNull().default(""),
   aiConfidence: text("ai_confidence").notNull().default(""),
   aiNotes: text("ai_notes").notNull().default(""),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+  createdAt: ts("created_at").notNull().defaultNow(),
 });
 
-export const equipment = sqliteTable("equipment", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const equipment = inv.table("equipment", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   name: text("name").notNull(),
   category: text("category").notNull().default("Tool"),
   serialNumber: text("serial_number").notNull().default(""),
   assetTag: text("asset_tag").notNull().default(""),
   brandModel: text("brand_model").notNull().default(""),
-  status: text("status", { enum: ["available", "in_use", "needs_repair", "out_of_service", "missing"] }).notNull().default("available"),
+  status: text("status", { enum: ["available", "in_use", "needs_repair", "out_of_service", "missing", "installed"] }).notNull().default("available"),
   condition: text("condition").notNull().default("good"),
   currentLocationId: integer("current_location_id"),
   assignedTo: text("assigned_to").notNull().default(""),
   notes: text("notes").notNull().default(""),
   // Consignment — equipment only. When isConsigned = 1, every move of this
-  // piece writes a consignment_logs row with the composed email queued for
-  // the external dispatcher (the app itself never sends).
+  // piece writes a consignment_logs row with its owner email composed and
+  // queued; server/src/mail.ts sends it.
   isConsigned: integer("is_consigned").notNull().default(0),
   consignmentOwner: text("consignment_owner").notNull().default(""),
   consignmentEmail: text("consignment_email").notNull().default(""),
   consignmentValueCents: integer("consignment_value_cents").notNull().default(0),
   consignmentNotes: text("consignment_notes").notNull().default(""),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+  // Water heater flow (job-tied consigned units) + ServiceTitan write-back.
+  // pulledAt = left the warehouse for a job (the supply house bills from this
+  // date); installedAt = on the customer's home and written to their ST record.
+  jobNumber: text("job_number").notNull().default(""),
+  customerName: text("customer_name").notNull().default(""),
+  pulledAt: ts("pulled_at"),
+  installedAt: ts("installed_at"),
+  stJobId: bigint("st_job_id", { mode: "number" }),
+  stCustomerId: bigint("st_customer_id", { mode: "number" }),
+  stLocationId: bigint("st_location_id", { mode: "number" }),
+  stEquipmentId: bigint("st_equipment_id", { mode: "number" }),
+  stSync: text("st_sync", { enum: ["n/a", "pending", "ok", "error"] }).notNull().default("n/a"),
+  stError: text("st_error").notNull().default(""),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  updatedAt: ts("updated_at").notNull().defaultNow(),
 });
 
-export const consignmentLogs = sqliteTable("consignment_logs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const consignmentLogs = inv.table("consignment_logs", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   equipmentId: integer("equipment_id").notNull(),
   // Snapshot of the piece's identity, written when the entry is created (and
   // backfilled at removal time for older entries). The Consign tab is the
@@ -144,40 +162,40 @@ export const consignmentLogs = sqliteTable("consignment_logs", {
   performedBy: text("performed_by").notNull().default(""),
   notes: text("notes").notNull().default(""),
   jobRef: text("job_ref").notNull().default(""),
-  emailStatus: text("email_status", { enum: ["pending", "queued", "sent", "skipped", "failed"] }).notNull().default("pending"),
+  emailStatus: text("email_status", { enum: ["pending", "queued", "sending", "sent", "skipped", "failed"] }).notNull().default("pending"),
   emailSentAt: text("email_sent_at").notNull().default(""),
-  // In-app outbox: the app itself composes and stores the exact notification
-  // (subject + body) on the log row at move time with status "queued", so
-  // the email the external dispatcher sends is the one recorded here — the
-  // log is the outbox, not just a queue flag. The dispatcher reports back
-  // via markConsignmentEmailSent / markConsignmentEmailFailed (the latter
-  // writes its error text to emailLastError and never touches a sent row).
+  // In-app outbox: the app composes and stores the exact notification
+  // (subject + body) on the log row at move time with status "queued". The
+  // sender (server/src/mail.ts, via Resend) claims a row ("sending"), sends
+  // it verbatim with an idempotency key, then marks it sent or failed.
   emailSubject: text("email_subject").notNull().default(""),
   emailBody: text("email_body").notNull().default(""),
   emailAttempts: integer("email_attempts").notNull().default(0),
   emailQueuedAt: text("email_queued_at").notNull().default(""),
   emailLastError: text("email_last_error").notNull().default(""),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+  // Set when the sender claims the row ("sending"); a stale claim is requeued.
+  emailClaimedAt: ts("email_claimed_at"),
+  createdAt: ts("created_at").notNull().defaultNow(),
 });
 
-export const equipmentLogs = sqliteTable("equipment_logs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const equipmentLogs = inv.table("equipment_logs", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   equipmentId: integer("equipment_id").notNull(),
   // Same audit-trail rule as consignment_logs: movement history survives the
   // piece. equipmentName is the snapshot used once the unit itself is gone,
   // and equipmentRemoved flags every entry of a removed piece.
   equipmentName: text("equipment_name").notNull().default(""),
   equipmentRemoved: integer("equipment_removed").notNull().default(0),
-  action: text("action", { enum: ["created", "checkout", "checkin", "transfer", "repair_out", "repair_in", "status_change", "note"] }).notNull().default("transfer"),
+  action: text("action", { enum: ["created", "checkout", "checkin", "transfer", "repair_out", "repair_in", "status_change", "note", "installed"] }).notNull().default("transfer"),
   fromLocationId: integer("from_location_id"),
   toLocationId: integer("to_location_id"),
   performedBy: text("performed_by").notNull().default(""),
   notes: text("notes").notNull().default(""),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+  createdAt: ts("created_at").notNull().defaultNow(),
 });
 
-export const intakeVerifications = sqliteTable("intake_verifications", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const intakeVerifications = inv.table("intake_verifications", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   orderId: integer("order_id"),
   vendor: text("vendor").notNull().default(""),
   poNumber: text("po_number").notNull().default(""),
@@ -193,5 +211,5 @@ export const intakeVerifications = sqliteTable("intake_verifications", {
   summary: text("summary").notNull().default(""),
   discrepancies: text("discrepancies").notNull().default(""),
   recommendedAction: text("recommended_action").notNull().default(""),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull().$defaultFn(() => new Date()),
+  createdAt: ts("created_at").notNull().defaultNow(),
 });

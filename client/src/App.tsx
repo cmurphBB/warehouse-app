@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fileToBase64 } from "@hatch/space-sdk/client";
-import { api, type ApiResponse } from "./api";
+import { api, fileToBase64, type ApiResponse } from "./api";
+import { WaterHeaters } from "./WaterHeaters";
 
 type State = ApiResponse<typeof api, "getState">;
 type LocRow = State["locations"][number];
@@ -94,7 +94,7 @@ function Badge({ children, color }: { children: React.ReactNode; color?: string 
   return <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide" style={{ background: color ? color + "22" : "var(--surface2)", color: color || "var(--dim)", border: `1px solid ${color ? color + "44" : "var(--border)"}` }}>{children}</span>;
 }
 function statusColor(s: string) {
-  const m: Record<string, string> = { received: "#137333", done: "#137333", picked_up: "#137333", staged: "#137333", loaded: "#052A78", ordered: "#052A78", in_transit: "#7C3AED", partial: "#B45309", picking: "#B45309", needed: "#C1272D", new: "#C1272D", urgent: "#C1272D", emergency: "#C1272D", draft: "#5B6B82", cancelled: "#5B6B82", ready: "#137333", available: "#137333", in_use: "#052A78", needs_repair: "#C1272D", out_of_service: "#C1272D", missing: "#7C2D12" };
+  const m: Record<string, string> = { received: "#137333", done: "#137333", picked_up: "#137333", staged: "#137333", loaded: "#052A78", ordered: "#052A78", in_transit: "#7C3AED", partial: "#B45309", picking: "#B45309", needed: "#C1272D", new: "#C1272D", urgent: "#C1272D", emergency: "#C1272D", draft: "#5B6B82", cancelled: "#5B6B82", ready: "#137333", available: "#137333", in_use: "#052A78", needs_repair: "#C1272D", out_of_service: "#C1272D", missing: "#7C2D12", installed: "#6A1B9A" };
   return m[s] || "#5B6B82";
 }
 function equipStatusLabel(s: string) { return s.replace(/_/g, " "); }
@@ -496,6 +496,7 @@ export function App() {
     let rows = data.equipment;
     if (equipLocFilter !== "all") rows = rows.filter(r => r.currentLocationId === equipLocFilter);
     if (equipStatusFilter !== "all") rows = rows.filter(r => r.status === equipStatusFilter);
+    else rows = rows.filter(r => r.status !== "installed");
     if (equipConsignFilter === "consigned") rows = rows.filter(r => (r as any).isConsigned);
     else if (equipConsignFilter === "owned") rows = rows.filter(r => !(r as any).isConsigned);
     if (equipSearch.trim()) { const s = equipSearch.toLowerCase(); rows = rows.filter(r => r.name.toLowerCase().includes(s) || r.serialNumber.toLowerCase().includes(s) || r.assetTag.toLowerCase().includes(s) || r.brandModel.toLowerCase().includes(s) || r.category.toLowerCase().includes(s) || r.currentLocationName.toLowerCase().includes(s) || r.assignedTo.toLowerCase().includes(s) || ((r as any).consignmentOwner || "").toLowerCase().includes(s)); }
@@ -703,7 +704,7 @@ export function App() {
             {/* Consignment snapshot — equipment only */}
             <section>
               <div className="flex items-center justify-between"><h2 className="font-display font-black text-lg">🤝 Consignment — vendor-owned equipment</h2><button onClick={() => setTab("consignment")} className="text-sm font-bold" style={{ color: NAVY }}>Consignment log</button></div>
-              <p className="text-sm mt-0.5" style={{ color: "var(--dim)" }}>Equipment that belongs to a vendor, not Blue Bear. Every move is logged automatically and an owner email is composed and queued — the external dispatcher sends it from Outlook.</p>
+              <p className="text-sm mt-0.5" style={{ color: "var(--dim)" }}>Equipment that belongs to a vendor, not Blue Bear. Every move is logged automatically and the owner is emailed.</p>
               {data.stats.totalConsigned === 0 ? <p className="mt-2 rounded-xl p-4 text-sm font-semibold" style={{ background: "var(--surface)", color: "var(--dim)" }}>Nothing on consignment right now. Mark any piece of equipment as consigned in the Equipment tab — set its owner and notify email once — and its moves start logging and queuing owner emails from there.</p> : (
                 <>
                   <div className="grid grid-cols-3 gap-2 mt-2">
@@ -1463,7 +1464,7 @@ export function App() {
             <div className="flex flex-col gap-2">
               <input aria-label="Search equipment" value={equipSearch} onChange={e => setEquipSearch(e.target.value)} placeholder="Search tool, serial #, asset tag, van, tech, or consignment owner…" className="w-full rounded-xl px-4 py-3 font-semibold outline-none" style={{ background: "var(--surface)", border: "1px solid var(--border)" }} />
               <div className="flex gap-2 flex-wrap">
-                {[{ v: "all", label: "All statuses" }, { v: "available", label: "Available" }, { v: "in_use", label: "In use" }, { v: "needs_repair", label: "Needs repair" }, { v: "out_of_service", label: "Out of service" }, { v: "missing", label: "Missing" }].map(f => (
+                {[{ v: "all", label: "All statuses" }, { v: "available", label: "Available" }, { v: "in_use", label: "In use" }, { v: "needs_repair", label: "Needs repair" }, { v: "out_of_service", label: "Out of service" }, { v: "missing", label: "Missing" }, { v: "installed", label: "Installed at customer" }].map(f => (
                   <button key={f.v} onClick={() => setEquipStatusFilter(f.v)} className="px-3 py-2 rounded-full text-sm font-bold" style={{ background: equipStatusFilter === f.v ? NAVY : "var(--surface)", color: equipStatusFilter === f.v ? "#fff" : "var(--text)", border: "1px solid var(--border)" }}>{f.label}</button>
                 ))}
                 {equipLocFilter !== "all" && <button onClick={() => setEquipLocFilter("all")} className="px-3 py-2 rounded-full text-sm font-bold" style={{ background: ORANGE, color: "#fff" }}>Clear van filter ✕</button>}
@@ -1591,7 +1592,7 @@ export function App() {
               {/* Consignment — set at add time or later from the equipment row */}
               <div className="mt-3 rounded-xl p-3" style={{ background: "var(--surface2)", border: equipForm.isConsigned ? `1.5px solid ${ORANGE}` : "1px solid var(--border)" }}>
                 <label className="flex items-center gap-2.5 cursor-pointer"><input type="checkbox" aria-label="New equipment is consigned" checked={equipForm.isConsigned} onChange={e => setEquipForm(f => ({ ...f, isConsigned: e.target.checked }))} className="h-6 w-6 accent-[#FF6700]" /><span className="text-sm font-black">🤝 This piece is consigned (vendor-owned equipment)</span></label>
-                <p className="text-xs mt-1" style={{ color: "var(--dim)" }}>Consignment is equipment-only. While it's on, every move is written to the Consignment Log and an owner email is composed and queued for the external dispatcher.</p>
+                <p className="text-xs mt-1" style={{ color: "var(--dim)" }}>Consignment is equipment-only. While it's on, every move is written to the Consignment Log and the owner is emailed.</p>
                 {equipForm.isConsigned && (
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     <label className="text-xs font-bold col-span-2 sm:col-span-1">Owner / vendor<input aria-label="New equipment consignment owner" value={equipForm.consignmentOwner} onChange={e => setEquipForm(f => ({ ...f, consignmentOwner: e.target.value }))} placeholder="e.g. F.W. Webb" className="mt-1 w-full rounded-lg px-3 py-2.5 font-semibold" style={{ background: "var(--surface)", border: "1px solid var(--border)" }} /></label>
@@ -1628,9 +1629,10 @@ export function App() {
 
         {tab === "consignment" && (
           <div className="space-y-5">
+            <WaterHeaters data={data} onChanged={inv} toast={setToast} />
             <section>
               <h2 className="font-display font-black text-lg">🤝 Consignment log — equipment only</h2>
-              <p className="text-sm mt-0.5" style={{ color: "var(--dim)" }}>Vendor-owned equipment pieces. Mark a piece as consigned once (owner + notify email) in the Equipment tab — from then on, every move of that piece is written here automatically and an owner email is composed and queued for the external dispatcher to send from Outlook. Parts and stock levels are never consigned. This log is the audit trail: entries are never deleted — if a piece is removed from inventory, its history stays here, marked as a removed piece.</p>
+              <p className="text-sm mt-0.5" style={{ color: "var(--dim)" }}>Vendor-owned equipment pieces. Mark a piece as consigned once (owner + notify email) in the Equipment tab — from then on, every move of that piece is written here automatically and the owner is emailed. Parts and stock levels are never consigned. This log is the audit trail: entries are never deleted — if a piece is removed from inventory, its history stays here, marked as a removed piece.</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
                 <div className="rounded-xl p-3 text-center" style={{ background: NAVY, color: "#fff" }}><p className="font-display font-black text-2xl leading-none">{data.stats.totalConsigned}</p><p className="text-[11px] font-bold uppercase tracking-wide mt-1 text-white/70">Pieces consigned</p></div>
                 <div className="rounded-xl p-3 text-center" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}><p className="font-display font-black text-2xl leading-none">{data.stats.consignmentMoves}</p><p className="text-[11px] font-bold uppercase tracking-wide mt-1" style={{ color: "var(--dim)" }}>Moves logged</p></div>
@@ -1640,13 +1642,13 @@ export function App() {
               <div className="mt-3 rounded-2xl p-4" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div>
-                    <p className="font-display font-black">✉ Email outbox — compose &amp; queue only</p>
-                    <p className="text-sm mt-0.5" style={{ color: "var(--dim)" }}>The moment a consigned piece moves, the app composes the owner's notification and queues it here with the exact subject and body stored on that move's log entry — tap <strong>View email</strong> on any entry to read precisely what will go out. The app itself never sends mail. An external dispatcher sends the queued emails from your Blue Bear Outlook and reports back here: the entry flips to <strong>Sent</strong> with the time on success, or to <strong>Failed</strong> with the dispatcher's error text if the send fails. Use the button below to check what's currently queued.</p>
+                    <p className="font-display font-black">✉ Email outbox</p>
+                    <p className="text-sm mt-0.5" style={{ color: "var(--dim)" }}>The moment a consigned piece moves, the app composes the owner's notification and queues it here with the exact subject and body stored on that move's log entry — tap <strong>View email</strong> on any entry to read precisely what will go out. Emails send automatically right after the move (and again every 15 minutes if anything is waiting). The entry flips to <strong>Sent</strong> with the time on success, or to <strong>Failed</strong> with the error if the send fails. Use the button below to send anything still waiting now.</p>
                   </div>
                 </div>
                 <div className="flex gap-2 mt-3 flex-wrap">
                   <button disabled={dispatchEmails.isPending} onClick={() => dispatchEmails.mutate()} className="px-5 py-3 rounded-xl text-white font-black disabled:opacity-40" style={{ background: ORANGE }}>{dispatchEmails.isPending ? "Checking…" : (data.stats as any).consignmentActionableEmails > 0 ? `Check queue — ${(data.stats as any).consignmentActionableEmails} not sent yet` : "Check queue — outbox clear"}</button>
-                  {data.stats.consignmentQueuedEmails > 0 && <span className="px-3 py-3 rounded-xl text-sm font-bold" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>{data.stats.consignmentQueuedEmails} queued — waiting for the external dispatcher</span>}
+                  {data.stats.consignmentQueuedEmails > 0 && <span className="px-3 py-3 rounded-xl text-sm font-bold" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>{data.stats.consignmentQueuedEmails} waiting to send</span>}
                   {(data.stats as any).consignmentFailedEmails > 0 && <span className="px-3 py-3 rounded-xl text-sm font-bold text-white" style={{ background: "#C1272D" }}>{(data.stats as any).consignmentFailedEmails} failed — see the reason on the entry and re-queue</span>}
                 </div>
                 {dispatchEmails.data && <p className="text-sm font-bold mt-2" style={{ color: (dispatchEmails.data as any).ok ? "#137333" : "#C1272D" }}>{(dispatchEmails.data as any).message}</p>}
@@ -1720,7 +1722,7 @@ export function App() {
                         {l.jobRef && <p className="text-xs mt-0.5"><strong>Job:</strong> {l.jobRef}</p>}
                         {l.notes && <p className="text-xs mt-0.5" style={{ color: "var(--dim)" }}>{l.notes}</p>}
                         {l.emailStatus === "sent" && l.emailSentAt && <p className="text-[11px] mt-0.5 font-semibold" style={{ color: "#137333" }}>Emailed {new Date(l.emailSentAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}{l.emailAttempts > 1 ? ` • took ${l.emailAttempts} attempts` : ""}</p>}
-                        {(l.emailStatus === "queued" || l.emailStatus === "pending") && <p className="text-[11px] mt-0.5 font-semibold" style={{ color: "var(--dim)" }}>Queued{l.emailQueuedAt ? ` ${new Date(l.emailQueuedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : ""} — waiting for the external dispatcher to send from Outlook and mark it sent here</p>}
+                        {(l.emailStatus === "queued" || l.emailStatus === "pending") && <p className="text-[11px] mt-0.5 font-semibold" style={{ color: "var(--dim)" }}>Queued{l.emailQueuedAt ? ` ${new Date(l.emailQueuedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : ""} — sending shortly</p>}
                         {l.emailStatus === "failed" && l.emailLastError && <p className="text-[11px] mt-0.5 font-bold" style={{ color: "#C1272D" }}>⚠ {l.emailLastError}</p>}
                         {l.emailStatus === "failed" && !l.emailLastError && <p className="text-[11px] mt-0.5 font-bold" style={{ color: "#C1272D" }}>⚠ Send failed — no reason recorded</p>}
                       </div>
@@ -1728,7 +1730,7 @@ export function App() {
                     </div>
                     <div className="flex gap-2 mt-2 flex-wrap">
                       {(l.emailSubject || l.emailBody) && <button onClick={() => setExpandedEmailId(expandedEmailId === l.id ? null : l.id)} aria-expanded={expandedEmailId === l.id} className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>{expandedEmailId === l.id ? "Hide email" : l.emailStatus === "sent" ? "View the email that was sent" : "View queued email"}</button>}
-                      {l.emailStatus === "failed" && <button onClick={() => retryEmail.mutate(l.id)} disabled={retryEmail.isPending} className="px-3 py-1.5 rounded-lg text-white text-xs font-bold disabled:opacity-50" style={{ background: "#C1272D" }}>{retryEmail.isPending ? "Re-queuing…" : "Re-queue for dispatcher"}</button>}
+                      {l.emailStatus === "failed" && <button onClick={() => retryEmail.mutate(l.id)} disabled={retryEmail.isPending} className="px-3 py-1.5 rounded-lg text-white text-xs font-bold disabled:opacity-50" style={{ background: "#C1272D" }}>{retryEmail.isPending ? "Re-queuing…" : "Retry send"}</button>}
                       {l.emailStatus === "skipped" && !(l as any).equipmentRemoved && <button onClick={() => setTab("equipment")} className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>Add owner email in Equipment →</button>}
                     </div>
                     {expandedEmailId === l.id && (l.emailSubject || l.emailBody) && (

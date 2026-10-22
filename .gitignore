@@ -1,12 +1,8 @@
 node_modules/
 dist/
-dist-cvm/
-.space-build/
-.space-build-cvm/
-.harness/
-.bun-cache/
+.fn-stage/
 *.tsbuildinfo
-app.db
-app.db-shm
-app.db-wal
-.xmds-icon
+.env*
+ui-shots/
+.tsbuildinfo*
+client/.tsbuildinfo*

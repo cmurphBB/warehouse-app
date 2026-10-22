@@ -2,18 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
-    <!-- Empty inline icon: stops the browser fetching /favicon.ico, which
-         lives outside the space's routes and fails auth. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="BB Inventory" />
+    <meta name="theme-color" content="#052A78" />
     <link rel="icon" href="data:," />
     <title>Blue Bear Inventory</title>
-    <script src="./src/main.tsx" type="module"></script>
   </head>
   <body>
-    <div
-      data-generated-space-root=""
-      data-generated-space-slug="blue-bear-inventory"
-    ></div>
+    <div id="root"></div>
+    <script type="module" src="./src/main.tsx"></script>
   </body>
 </html>

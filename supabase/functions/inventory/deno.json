@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "zod": "npm:zod@4.4.3",
+    "drizzle-orm": "npm:drizzle-orm@0.45.2",
+    "drizzle-orm/": "npm:/drizzle-orm@0.45.2/",
+    "postgres": "npm:postgres@3.4.5",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.118.0"
+  }
+}
