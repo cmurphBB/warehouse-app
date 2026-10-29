@@ -138,8 +138,77 @@ export const equipment = inv.table("equipment", {
   stEquipmentId: bigint("st_equipment_id", { mode: "number" }),
   stSync: text("st_sync", { enum: ["n/a", "pending", "syncing", "ok", "error"] }).notNull().default("n/a"),
   stError: text("st_error").notNull().default(""),
+  // Blue Bear water heater CAGE (owned stock, is_consigned = 0). whType links
+  // to wh_types; receivedAt is the FIFO clock (falls back to createdAt). The
+  // released* / techName / signature / afterHours fields hold the LATEST
+  // sign-out — the per-event record is the wh_reorders row.
+  whType: text("wh_type"),
+  receivedAt: ts("received_at"),
+  poNumber: text("po_number").notNull().default(""),
+  releasedBy: text("released_by").notNull().default(""),
+  releasedByName: text("released_by_name").notNull().default(""),
+  techName: text("tech_name").notNull().default(""),
+  signatureBlobKey: text("signature_blob_key").notNull().default(""),
+  afterHours: integer("after_hours").notNull().default(0),
+  fifoOverrideReason: text("fifo_override_reason").notNull().default(""),
   createdAt: ts("created_at").notNull().defaultNow(),
   updatedAt: ts("updated_at").notNull().defaultNow(),
+});
+
+// The six cage types and their pars (seeded by the migration).
+export const whTypes = inv.table("wh_types", {
+  key: text("key").primaryKey(),
+  label: text("label").notNull(),
+  fuel: text("fuel").notNull().default(""),
+  gallons: integer("gallons").notNull().default(0),
+  par: integer("par").notNull().default(0),
+  sort: integer("sort").notNull().default(0),
+});
+
+// One row per cage sign-out; doubles as the job-PO reorder tracker.
+export const whReorders = inv.table("wh_reorders", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  whType: text("wh_type").notNull(),
+  equipmentId: integer("equipment_id").notNull(),
+  serialNumber: text("serial_number").notNull().default(""),
+  jobNumber: text("job_number").notNull().default(""),
+  status: text("status", { enum: ["open", "ordered", "received", "cancelled"] }).notNull().default("open"),
+  poNumber: text("po_number").notNull().default(""),
+  techName: text("tech_name").notNull().default(""),
+  releasedBy: text("released_by").notNull().default(""),
+  releasedByName: text("released_by_name").notNull().default(""),
+  signatureBlobKey: text("signature_blob_key").notNull().default(""),
+  afterHours: integer("after_hours").notNull().default(0),
+  fifoOverrideReason: text("fifo_override_reason").notNull().default(""),
+  createdAt: ts("created_at").notNull().defaultNow(),
+  orderedAt: ts("ordered_at"),
+  orderedBy: text("ordered_by").notNull().default(""),
+  receivedAt: ts("received_at"),
+  receivedBy: text("received_by").notNull().default(""),
+  receivedEquipmentId: integer("received_equipment_id"),
+});
+
+// Tuesday cage counts: a session plus a line per serial.
+export const whCounts = inv.table("wh_counts", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  startedBy: text("started_by").notNull().default(""),
+  startedAt: ts("started_at").notNull().defaultNow(),
+  finishedBy: text("finished_by").notNull().default(""),
+  finishedAt: ts("finished_at"),
+  expected: integer("expected").notNull().default(0),
+  scanned: integer("scanned").notNull().default(0),
+  missing: integer("missing").notNull().default(0),
+  unexpected: integer("unexpected").notNull().default(0),
+});
+
+export const whCountLines = inv.table("wh_count_lines", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  countId: integer("count_id").notNull(),
+  equipmentId: integer("equipment_id"),
+  serialNumber: text("serial_number").notNull().default(""),
+  whType: text("wh_type").notNull().default(""),
+  result: text("result", { enum: ["scanned", "missing", "unexpected"] }).notNull().default("scanned"),
+  createdAt: ts("created_at").notNull().defaultNow(),
 });
 
 export const consignmentLogs = inv.table("consignment_logs", {

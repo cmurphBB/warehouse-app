@@ -16,6 +16,9 @@ export async function makeTestDb() {
     .replace(/insert into storage\.buckets[\s\S]*?do nothing;/, "");
   await pg.exec(ddl);
   await pg.exec(readFileSync(new URL("../supabase/migrations/20261022181000_inventory_wh_serial_unique.sql", import.meta.url), "utf8"));
+  // Cage migration: PGlite has no anon/authenticated roles, so drop the RLS do-block.
+  const cage = readFileSync(new URL("../supabase/migrations/20261029190000_wh_cage.sql", import.meta.url), "utf8").replace(/do \$\$[\s\S]*?end \$\$;/g, "");
+  await pg.exec(cage);
 
   // 2. Data (same conversion as the production import)
   const lite = new Database(":memory:");

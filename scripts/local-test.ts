@@ -1,7 +1,7 @@
 // Local end-to-end test of the server actions against an in-memory Postgres
 // (PGlite) loaded with the real data from db-dump.sql. No network, no secrets.
 //   bun scripts/local-test.ts
-import { Actions } from "../server/src/actions.ts";
+import { Actions, isAfterHours, whClock } from "../server/src/actions.ts";
 import { flushOutbox } from "../server/src/mail.ts";
 import { runtimeEnv, type Ctx } from "../server/src/sdk.ts";
 import { makeTestDb } from "./test-db.ts";
@@ -131,6 +131,132 @@ const eq = await run("createEquipment", { name: "Rental jetter", isConsigned: tr
 await run("moveEquipment", { equipmentId: eq.id, toLocationId: truck.id, action: "checkout" });
 s = await run("getState", {});
 check("move queued an owner email", s.consignmentLogs.filter((l: any) => l.equipmentId === eq.id && l.emailStatus === "queued").length === 2);
+
+// ---- Water heater CAGE (Blue Bear-owned stock, 2026-10-27 process) ----
+console.log("water heater cage — hours rule");
+const runAs = (c: Ctx, name: keyof typeof Actions, args: any) => (Actions[name] as any).handler(c, (Actions[name] as any).request.parse(args));
+const businessHrs = new Date("2026-10-28T14:00:00Z"); // Wed 10:00 AM ET (EDT)
+const nightHrs = new Date("2026-10-29T00:30:00Z");    // Wed 8:30 PM ET
+whClock.now = () => businessHrs;
+check("Wed 10:00 AM ET is business hours", !isAfterHours(businessHrs));
+check("Wed 8:30 PM ET is after hours", isAfterHours(nightHrs));
+check("Sat noon ET is after hours", isAfterHours(new Date("2026-10-31T16:00:00Z")));
+check("Fri 4:30 PM ET is business hours (7–5)", !isAfterHours(new Date("2026-10-30T20:30:00Z")));
+check("Mon 6:30 AM ET is after hours", isAfterHours(new Date("2026-10-26T10:30:00Z")));
+
+console.log("cage receive, par board, FIFO");
+const SIG = "A".repeat(400); // valid base64, long enough to count as a signature
+const c1 = await run("whReceive", { serialNumber: "CAGE0001", model: "PROG50", brand: "Rheem", whType: "50g", poNumber: "PO-1001", warehouseLocationId: wh.id });
+check("cage receive ok", c1.id > 0);
+let cagePoErr = ""; try { await run("whReceive", { serialNumber: "CAGE0002", model: "PROG50", whType: "50g" }); } catch (e) { cagePoErr = (e as Error).message; }
+check("cage receive requires a PO #", /PO #/.test(cagePoErr), cagePoErr);
+let badTypeErr = ""; try { await run("whReceive", { serialNumber: "CAGE0002", model: "PROG50", whType: "60g", poNumber: "PO-X" }); } catch (e) { badTypeErr = (e as Error).message; }
+check("unknown cage type rejected", /Unknown water heater type/.test(badTypeErr), badTypeErr);
+const c2 = await run("whReceive", { serialNumber: "CAGE0002", model: "PROG50", whType: "50g", poNumber: "PO-1002", warehouseLocationId: wh.id });
+s = await run("getState", {});
+check("6 cage types seeded", s.whTypes.length === 6, s.whTypes.length);
+const t50g = () => s.whTypes.find((t: any) => t.key === "50g");
+check("par board: 2 × 50 gal Gas in cage, at par", t50g().inCage === 2 && !t50g().belowPar, t50g());
+check("par board: the 5 empty types show below par", s.whTypes.filter((t: any) => t.belowPar).length === 5 && s.stats.whCageBelowPar === 5);
+check("FIFO oldest is the first one received", t50g().oldestSerial === "CAGE0001");
+check("cage units are not consigned", s.equipment.find((e: any) => e.id === c1.id).isConsigned === false);
+
+console.log("sign-out: roles, FIFO, signature, reorder");
+let fifoErr = ""; try { await runAs(whCtx, "whSignOut", { whType: "50g", equipmentId: c2.id, jobNumber: "777", techName: "Mike T", signaturePngBase64: SIG }); } catch (e) { fifoErr = (e as Error).message; }
+check("newer unit without a reason is refused", /FIFO/.test(fifoErr) && /CAGE0001/.test(fifoErr), fifoErr);
+let techErr = ""; try { await runAs(techCtx, "whSignOut", { whType: "50g", jobNumber: "777", techName: "Mike T", signaturePngBase64: SIG }); } catch (e) { techErr = (e as Error).message; }
+check("TECHNICIAN refused during business hours", /Only the warehouse/.test(techErr), techErr);
+const so1 = await runAs(whCtx, "whSignOut", { whType: "50g", jobNumber: "777", techName: "Mike T", signaturePngBase64: SIG });
+check("warehouse sign-out picks the FIFO oldest", so1.ok && so1.serialNumber === "CAGE0001" && !so1.afterHours, so1);
+s = await run("getState", {});
+check("sign-out opened a reorder on the job", s.whReorders.some((r: any) => r.status === "open" && r.serialNumber === "CAGE0001" && r.jobNumber === "777"));
+check("sign-out row has tech, releaser and signature", (() => { const r = s.whReorders.find((x: any) => x.serialNumber === "CAGE0001"); return r.techName === "Mike T" && r.releasedByName === "Test User" && r.signatureUrl.includes("wh-signatures/"); })(), s.whReorders[0]);
+check("generic move refuses cage water heaters too", await run("moveEquipment", { equipmentId: c2.id, toLocationId: truck.id, action: "checkout" }).then(() => false, (e: Error) => /Water heaters/.test(e.message)));
+
+console.log("receive fills the oldest open reorder; override; reorder flow");
+const c3 = await run("whReceive", { serialNumber: "CAGE0003", model: "PROG50", whType: "50g", poNumber: "PO-1003", warehouseLocationId: wh.id });
+check("receive says the reorder was filled", /filled/.test(c3.message), c3.message);
+s = await run("getState", {});
+check("receiving closed the oldest open reorder", s.whReorders.find((r: any) => r.serialNumber === "CAGE0001").status === "received");
+const so3 = await runAs(whCtx, "whSignOut", { whType: "50g", equipmentId: c3.id, jobNumber: "778", techName: "Joe P", signaturePngBase64: SIG, fifoOverrideReason: "Oldest unit dented" });
+check("FIFO override with a written reason works", so3.ok && so3.serialNumber === "CAGE0003");
+s = await run("getState", {});
+check("override reason stored on the sign-out", s.whReorders.find((r: any) => r.jobNumber === "778").fifoOverrideReason === "Oldest unit dented");
+const open778 = s.whReorders.find((r: any) => r.jobNumber === "778");
+let poErr = ""; try { await runAs(whCtx, "whReorderUpdate", { reorderId: open778.id, status: "ordered" }); } catch (e) { poErr = (e as Error).message; }
+check("mark ordered requires a PO #", /PO #/.test(poErr), poErr);
+await runAs(whCtx, "whReorderUpdate", { reorderId: open778.id, status: "ordered", poNumber: "PO-2000" });
+await runAs(whCtx, "whReorderUpdate", { reorderId: open778.id, status: "received" });
+s = await run("getState", {});
+check("reorder ordered → received, PO kept", (() => { const r = s.whReorders.find((x: any) => x.id === open778.id); return r.status === "received" && r.poNumber === "PO-2000"; })());
+
+console.log("return, race, par goes red");
+await runAs(whCtx, "whSignOut", { whType: "50g", jobNumber: "779", techName: "Mike T", signaturePngBase64: SIG }); // takes CAGE0002
+s = await run("getState", {});
+check("par board red once the cage is empty of a type", t50g().inCage === 0 && t50g().belowPar, t50g());
+await run("whReturn", { equipmentId: c2.id, toLocationId: wh.id, reason: "Job cancelled" });
+s = await run("getState", {});
+check("return put the unit back in the cage", t50g().inCage === 1 && t50g().oldestSerial === "CAGE0002");
+check("return cancelled that job's open reorder", s.whReorders.find((r: any) => r.jobNumber === "779").status === "cancelled");
+const race2 = await Promise.allSettled([
+  runAs(whCtx, "whSignOut", { whType: "50g", jobNumber: "801", techName: "Al B", signaturePngBase64: SIG }),
+  runAs(whCtx, "whSignOut", { whType: "50g", jobNumber: "802", techName: "Bo C", signaturePngBase64: SIG }),
+]);
+check("two iPads, one unit → exactly one sign-out wins", race2.filter((x) => x.status === "fulfilled").length === 1, race2.map((x) => x.status));
+s = await run("getState", {});
+check("race loser left no reorder behind", s.whReorders.filter((r: any) => (r.jobNumber === "801" || r.jobNumber === "802") && r.status === "open").length === 1);
+await run("whReturn", { equipmentId: c2.id, toLocationId: wh.id, reason: "race test" });
+
+console.log("Tuesday count");
+const c4 = await run("whReceive", { serialNumber: "CAGE0404", model: "E40", whType: "40e", poNumber: "PO-3000", warehouseLocationId: wh.id });
+const count = await runAs(whCtx, "whCountStart", {});
+check("count expects the in-cage units", count.expected.length === 2, count.expected);
+const scan1 = await runAs(whCtx, "whCountScan", { countId: count.countId, serial: "cage0404" });
+check("scan matches (case-insensitive) with its type", scan1.result === "scanned" && scan1.whTypeLabel === "40 gal Electric", scan1);
+const scanDup = await runAs(whCtx, "whCountScan", { countId: count.countId, serial: "CAGE0404" });
+check("duplicate scan flagged, not double-counted", scanDup.result === "duplicate" && scanDup.scannedCount === 1, scanDup);
+const scanBogus = await runAs(whCtx, "whCountScan", { countId: count.countId, serial: "GHOST999" });
+check("unknown serial comes back unexpected", scanBogus.result === "unexpected");
+const fin = await runAs(whCtx, "whCountFinish", { countId: count.countId });
+check("count reports the missing serial", fin.missingSerials.length === 1 && fin.missingSerials[0] === "CAGE0002", fin);
+check("count reports the unexpected serial", fin.unexpectedSerials.length === 1 && fin.unexpectedSerials[0] === "GHOST999", fin);
+s = await run("getState", {});
+check("count session stored with its lines", (() => { const c = s.whCounts[0]; return !!c.finished_at && c.missing === 1 && c.unexpected === 1 && c.scanned === 1 && c.missingSerials[0] === "CAGE0002"; })(), s.whCounts[0]);
+let finErr = ""; try { await runAs(whCtx, "whCountFinish", { countId: count.countId }); } catch (e) { finErr = (e as Error).message; }
+check("double finish refused", /already finished/.test(finErr), finErr);
+
+console.log("after hours: tech allowed, ServiceTitan note mandatory");
+whClock.now = () => nightHrs;
+let stOffErr = ""; try { await runAs(techCtx, "whSignOut", { whType: "40e", jobNumber: "900", techName: "Night Tech", signaturePngBase64: SIG }); } catch (e) { stOffErr = (e as Error).message; }
+check("after hours with ServiceTitan off is refused", /ServiceTitan is off/.test(stOffErr), stOffErr);
+envVals.ST_CLIENT_ID = "id"; envVals.ST_CLIENT_SECRET = "sec"; envVals.ST_APP_KEY = "key"; envVals.ST_TENANT_ID = "t1";
+const stNotes: string[] = [];
+let failNotes = true;
+const realFetch2 = globalThis.fetch;
+(globalThis as any).fetch = async (url: any, init?: any) => {
+  const u = String(url);
+  if (u.includes("/connect/token")) return new Response(JSON.stringify({ access_token: "tok", expires_in: 900 }), { status: 200 });
+  if (u.includes("/jobs?number=")) { const num = decodeURIComponent(u.split("number=")[1]!.split("&")[0]!); return new Response(JSON.stringify({ data: [{ id: 9001, jobNumber: num, customerId: 77, locationId: 55 }] }), { status: 200 }); }
+  if (u.includes("/customers/")) return new Response(JSON.stringify({ name: "Night Customer" }), { status: 200 });
+  if (u.includes("/notes")) { if (failNotes) return new Response("boom", { status: 500 }); stNotes.push(JSON.parse(String(init?.body ?? "{}")).text); return new Response("{}", { status: 200 }); }
+  return new Response("{}", { status: 200 });
+};
+let noteErr = ""; try { await runAs(techCtx, "whSignOut", { whType: "40e", jobNumber: "900", techName: "Night Tech", signaturePngBase64: SIG }); } catch (e) { noteErr = (e as Error).message; }
+check("failed ST note fails the whole sign-out", /job note/.test(noteErr), noteErr);
+s = await run("getState", {});
+check("unit stayed in the cage after the failed note", s.whTypes.find((t: any) => t.key === "40e").inCage === 1);
+check("no reorder left behind by the failed sign-out", !s.whReorders.some((r: any) => r.jobNumber === "900"));
+failNotes = false;
+const night = await runAs(techCtx, "whSignOut", { whType: "40e", jobNumber: "900", techName: "Night Tech", signaturePngBase64: SIG });
+check("tech sign-out accepted after hours, flagged", night.ok && night.afterHours && night.serialNumber === "CAGE0404", night);
+check("after-hours ST note posted on the job", stNotes.some((n) => /AFTER-HOURS/.test(n) && /CAGE0404/.test(n)), stNotes);
+s = await run("getState", {});
+check("after-hours flag stored on the sign-out row", s.whReorders.find((r: any) => r.jobNumber === "900").afterHours === true);
+check("cage stats count the signed-out unit", s.stats.whCageSignedOut >= 1 && s.stats.whOpenReorders >= 1, s.stats.whCageSignedOut);
+(globalThis as any).fetch = realFetch2;
+delete envVals.ST_CLIENT_ID; delete envVals.ST_CLIENT_SECRET; delete envVals.ST_APP_KEY; delete envVals.ST_TENANT_ID;
+whClock.now = () => new Date();
+void c4;
 
 console.log(failures ? `\n${failures} FAILED` : "\nAll checks passed");
 process.exit(failures ? 1 : 0);

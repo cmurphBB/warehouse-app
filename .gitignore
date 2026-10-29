@@ -6,3 +6,4 @@ dist/
 ui-shots/
 .tsbuildinfo*
 client/.tsbuildinfo*
+supabase/.temp/

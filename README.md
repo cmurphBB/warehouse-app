@@ -40,9 +40,11 @@ Anything not set simply turns that feature off; the app shows "ServiceTitan off"
 
 Same accounts as the warehouse app (`public.profiles`). Roles: **Admin/Manager** everything · **Warehouse** day-to-day (no deletes or pricing admin) · **Technician** requests, photo ID, equipment moves, water heater pull/install/return · **View only** read. "Performed by" fields fill in from the login when left blank.
 
-## Water heater consignment
+## Water heaters
 
-Receive (no email) → **Pull** for a ServiceTitan job (job # required and verified; supply house emailed; bills from this date; ST job note) → **Install** (serial written to the customer's installed equipment in ST; supply house emailed) or **Return** (back to stock; ST note; supply house told to void). Units pulled 7+ days without install are flagged.
+**Blue Bear cage (owned stock)** — the 2026-10-27 process, replacing the paper sign-out sheet. Six types held at par in the locked cage (`inventory.wh_types`). Receive (whType + serial + model + PO #; fills the oldest waiting reorder) → **Sign out** (FIFO: the oldest unit of the type goes first, override needs a written reason; job # verified in ServiceTitan; tech signs on the iPad; releaser = the login, WAREHOUSE/MANAGER/ADMIN only during Mon–Fri 7–5 ET; after hours any role may sign out but the ST job note is mandatory) → each sign-out opens a `wh_reorders` row (open → ordered (PO #) → received; cancelled on return). **Install** writes the serial to the ST customer; **Return** puts the unit back FIFO and cancels its open reorder. **Tuesday count** scans the cage and stores missing/unexpected serials. The sign-out log prints / exports CSV with signature thumbnails.
+
+**Consigned water heaters (supply-house owned)** — unchanged: Receive (no email) → **Pull** for a ServiceTitan job (job # required and verified; supply house emailed; bills from this date; ST job note) → **Install** (serial written to the customer's installed equipment in ST; supply house emailed) or **Return** (back to stock; ST note; supply house told to void). Units pulled 7+ days without install are flagged.
 
 ## Local checks
 

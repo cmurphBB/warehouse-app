@@ -112,7 +112,12 @@ const stagingLineOut = z.object({ id: z.number(), stagingId: z.number(), partId:
 const stagingOut = z.object({ id: z.number(), customer: z.string(), jobType: z.string(), jobDate: z.string(), truckLocationId: z.number().nullable(), truckName: z.string(), status: z.string(), notes: z.string(), created_at: z.string(), lines: z.array(stagingLineOut) });
 const techOut = z.object({ id: z.number(), techName: z.string(), partDescription: z.string(), qty: z.number(), urgency: z.string(), jobRef: z.string(), status: z.string(), notes: z.string(), imageUrl: z.string(), aiPartName: z.string(), aiEquipment: z.string(), aiConfidence: z.string(), aiNotes: z.string(), created_at: z.string() });
 const intakeOut = z.object({ id: z.number(), orderId: z.number().nullable(), vendor: z.string(), poNumber: z.string(), checkedBy: z.string(), verdict: z.string(), confidence: z.string(), invoiceImageUrl: z.string(), partImageUrl: z.string(), invoiceVendor: z.string(), invoicePoNumber: z.string(), invoiceParts: z.string(), physicalPart: z.string(), summary: z.string(), discrepancies: z.string(), recommendedAction: z.string(), created_at: z.string() });
-const equipmentOut = z.object({ id: z.number(), name: z.string(), category: z.string(), serialNumber: z.string(), assetTag: z.string(), brandModel: z.string(), status: z.string(), condition: z.string(), currentLocationId: z.number().nullable(), currentLocationName: z.string(), currentLocationKind: z.string(), assignedTo: z.string(), notes: z.string(), isConsigned: z.boolean(), consignmentOwner: z.string(), consignmentEmail: z.string(), consignmentValueCents: z.number(), consignmentNotes: z.string(), jobNumber: z.string(), customerName: z.string(), pulledAt: z.string(), installedAt: z.string(), stSync: z.string(), stError: z.string(), stEquipmentId: z.number().nullable(), daysOut: z.number().nullable(), created_at: z.string(), updated_at: z.string() });
+const equipmentOut = z.object({ id: z.number(), name: z.string(), category: z.string(), serialNumber: z.string(), assetTag: z.string(), brandModel: z.string(), status: z.string(), condition: z.string(), currentLocationId: z.number().nullable(), currentLocationName: z.string(), currentLocationKind: z.string(), assignedTo: z.string(), notes: z.string(), isConsigned: z.boolean(), consignmentOwner: z.string(), consignmentEmail: z.string(), consignmentValueCents: z.number(), consignmentNotes: z.string(), jobNumber: z.string(), customerName: z.string(), pulledAt: z.string(), installedAt: z.string(), stSync: z.string(), stError: z.string(), stEquipmentId: z.number().nullable(), daysOut: z.number().nullable(), whType: z.string(), receivedAt: z.string(), poNumber: z.string(), releasedByName: z.string(), techName: z.string(), afterHours: z.boolean(), fifoOverrideReason: z.string(), created_at: z.string(), updated_at: z.string() });
+// Cage par board: one row per type with what's in the cage right now.
+const whTypeOut = z.object({ key: z.string(), label: z.string(), fuel: z.string(), gallons: z.number(), par: z.number(), sort: z.number(), inCage: z.number(), belowPar: z.boolean(), oldestEquipmentId: z.number().nullable(), oldestSerial: z.string(), oldestReceivedAt: z.string(), oldestDays: z.number().nullable() });
+// One row per cage sign-out; also the reorder tracker (open → ordered → received, cancelled on return).
+const whReorderOut = z.object({ id: z.number(), whType: z.string(), whTypeLabel: z.string(), equipmentId: z.number(), serialNumber: z.string(), model: z.string(), jobNumber: z.string(), status: z.string(), poNumber: z.string(), techName: z.string(), releasedByName: z.string(), afterHours: z.boolean(), fifoOverrideReason: z.string(), signatureUrl: z.string(), created_at: z.string(), orderedAt: z.string(), orderedBy: z.string(), receivedAt: z.string(), receivedBy: z.string() });
+const whCountOut = z.object({ id: z.number(), startedBy: z.string(), started_at: z.string(), finishedBy: z.string(), finished_at: z.string(), expected: z.number(), scanned: z.number(), missing: z.number(), unexpected: z.number(), missingSerials: z.array(z.string()), unexpectedSerials: z.array(z.string()) });
 const equipmentLogOut = z.object({ id: z.number(), equipmentId: z.number(), equipmentName: z.string(), equipmentRemoved: z.boolean(), action: z.string(), fromLocationId: z.number().nullable(), fromLocationName: z.string(), toLocationId: z.number().nullable(), toLocationName: z.string(), performedBy: z.string(), notes: z.string(), created_at: z.string() });
 const consignmentLogOut = z.object({ id: z.number(), equipmentId: z.number(), equipmentName: z.string(), equipmentRemoved: z.boolean(), serialNumber: z.string(), assetTag: z.string(), owner: z.string(), notifyEmail: z.string(), action: z.string(), fromLocationId: z.number().nullable(), fromLocationName: z.string(), toLocationId: z.number().nullable(), toLocationName: z.string(), performedBy: z.string(), notes: z.string(), jobRef: z.string(), emailStatus: z.string(), emailSentAt: z.string(), emailSubject: z.string(), emailBody: z.string(), emailAttempts: z.number(), emailQueuedAt: z.string(), emailLastError: z.string(), created_at: z.string() });
 
@@ -128,8 +133,11 @@ const getStateResponse = z.object({
   equipmentLogs: z.array(equipmentLogOut),
   consignmentLogs: z.array(consignmentLogOut),
   consignmentByOwner: z.array(z.object({ owner: z.string(), email: z.string(), count: z.number(), valueCents: z.number(), locations: z.array(z.string()) })),
+  whTypes: z.array(whTypeOut),
+  whReorders: z.array(whReorderOut),
+  whCounts: z.array(whCountOut),
   partPrices: z.array(partPriceOut),
-  stats: z.object({ totalParts: z.number(), totalLocations: z.number(), lowStockCount: z.number(), openOrders: z.number(), stagingNeeded: z.number(), newTechRequests: z.number(), totalUnits: z.number(), intakeChecks: z.number(), intakeMismatches: z.number(), totalEquipment: z.number(), equipmentNeedsRepair: z.number(), equipmentMissing: z.number(), equipmentInUse: z.number(), equipmentAvailable: z.number(), pricedParts: z.number(), pricedLines: z.number(), unmatchedPricedLines: z.number(), totalConsigned: z.number(), consignmentPendingEmails: z.number(), consignmentQueuedEmails: z.number(), consignmentFailedEmails: z.number(), consignmentActionableEmails: z.number(), consignmentStuckEmails: z.number(), consignmentValueCents: z.number(), consignmentMoves: z.number(), whInStock: z.number(), whPulled: z.number(), whPulledOverdue: z.number(), whStErrors: z.number(), stLive: z.boolean(), mailLive: z.boolean() }),
+  stats: z.object({ totalParts: z.number(), totalLocations: z.number(), lowStockCount: z.number(), openOrders: z.number(), stagingNeeded: z.number(), newTechRequests: z.number(), totalUnits: z.number(), intakeChecks: z.number(), intakeMismatches: z.number(), totalEquipment: z.number(), equipmentNeedsRepair: z.number(), equipmentMissing: z.number(), equipmentInUse: z.number(), equipmentAvailable: z.number(), pricedParts: z.number(), pricedLines: z.number(), unmatchedPricedLines: z.number(), totalConsigned: z.number(), consignmentPendingEmails: z.number(), consignmentQueuedEmails: z.number(), consignmentFailedEmails: z.number(), consignmentActionableEmails: z.number(), consignmentStuckEmails: z.number(), consignmentValueCents: z.number(), consignmentMoves: z.number(), whInStock: z.number(), whPulled: z.number(), whPulledOverdue: z.number(), whStErrors: z.number(), whCageInCage: z.number(), whCageBelowPar: z.number(), whCageSignedOut: z.number(), whOpenReorders: z.number(), stLive: z.boolean(), mailLive: z.boolean() }),
   warehouseDepartments: z.array(z.object({ department: z.string(), partCount: z.number(), stockRows: z.number(), totalUnits: z.number(), lowStockCount: z.number(), subcategories: z.array(z.object({ category: z.string(), count: z.number() })) })),
 });
 
@@ -256,7 +264,7 @@ function redactForTech(s: GetState): GetState {
 
 async function buildState(ctx: any): Promise<GetState> {
   const db: any = ctx.db();
-  const [parts, locs, stockRows, orders, orderLines, staging, stagingLines, tech, intakes, equipmentRows, equipLogs, consignLogs] = await Promise.all([
+  const [parts, locs, stockRows, orders, orderLines, staging, stagingLines, tech, intakes, equipmentRows, equipLogs, consignLogs, whTypeRows, whReorderRows, whCountRows, whCountLineRows] = await Promise.all([
     db.select().from(schema.parts).orderBy(asc(schema.parts.name)),
     db.select().from(schema.locations).orderBy(asc(schema.locations.name)),
     db.select().from(schema.stockLevels),
@@ -269,6 +277,10 @@ async function buildState(ctx: any): Promise<GetState> {
     db.select().from(schema.equipment).orderBy(asc(schema.equipment.name)),
     db.select().from(schema.equipmentLogs).orderBy(desc(schema.equipmentLogs.createdAt)),
     db.select().from(schema.consignmentLogs).orderBy(desc(schema.consignmentLogs.createdAt)),
+    db.select().from(schema.whTypes).orderBy(asc(schema.whTypes.sort)),
+    db.select().from(schema.whReorders).orderBy(desc(schema.whReorders.createdAt)),
+    db.select().from(schema.whCounts).orderBy(desc(schema.whCounts.startedAt)),
+    db.select().from(schema.whCountLines),
   ]);
   // Resolve blob URLs for photos
   const signed = async (k: string) => { if (!k) return ""; try { return await ctx.blobs.getUrl(k); } catch { return ""; } };
@@ -329,7 +341,7 @@ async function buildState(ctx: any): Promise<GetState> {
   const equipMap: Map<number, any> = new Map(equipmentRows.map((e: any) => [e.id, e] as [number, any]));
   const equipmentOutList = equipmentRows.map((e: any) => {
     const loc = e.currentLocationId ? locMap.get(e.currentLocationId) : null;
-    return { id: e.id, name: e.name, category: e.category, serialNumber: e.serialNumber ?? "", assetTag: e.assetTag ?? "", brandModel: e.brandModel ?? "", status: e.status, condition: e.condition ?? "good", currentLocationId: e.currentLocationId ?? null, currentLocationName: loc?.name ?? "Unassigned", currentLocationKind: loc?.kind ?? "", assignedTo: e.assignedTo ?? "", notes: e.notes ?? "", isConsigned: (e.isConsigned ?? 0) === 1, consignmentOwner: e.consignmentOwner ?? "", consignmentEmail: e.consignmentEmail ?? "", consignmentValueCents: e.consignmentValueCents ?? 0, consignmentNotes: e.consignmentNotes ?? "", jobNumber: e.jobNumber ?? "", customerName: e.customerName ?? "", pulledAt: e.pulledAt ? e.pulledAt.toISOString() : "", installedAt: e.installedAt ? e.installedAt.toISOString() : "", stSync: e.stSync ?? "n/a", stError: e.stError ?? "", stEquipmentId: e.stEquipmentId ?? null, daysOut: e.pulledAt && !e.installedAt ? Math.floor((Date.now() - e.pulledAt.getTime()) / 86_400_000) : null, created_at: e.createdAt.toISOString(), updated_at: e.updatedAt.toISOString() };
+    return { id: e.id, name: e.name, category: e.category, serialNumber: e.serialNumber ?? "", assetTag: e.assetTag ?? "", brandModel: e.brandModel ?? "", status: e.status, condition: e.condition ?? "good", currentLocationId: e.currentLocationId ?? null, currentLocationName: loc?.name ?? "Unassigned", currentLocationKind: loc?.kind ?? "", assignedTo: e.assignedTo ?? "", notes: e.notes ?? "", isConsigned: (e.isConsigned ?? 0) === 1, consignmentOwner: e.consignmentOwner ?? "", consignmentEmail: e.consignmentEmail ?? "", consignmentValueCents: e.consignmentValueCents ?? 0, consignmentNotes: e.consignmentNotes ?? "", jobNumber: e.jobNumber ?? "", customerName: e.customerName ?? "", pulledAt: e.pulledAt ? e.pulledAt.toISOString() : "", installedAt: e.installedAt ? e.installedAt.toISOString() : "", stSync: e.stSync ?? "n/a", stError: e.stError ?? "", stEquipmentId: e.stEquipmentId ?? null, daysOut: e.pulledAt && !e.installedAt ? Math.floor((Date.now() - e.pulledAt.getTime()) / 86_400_000) : null, whType: e.whType ?? "", receivedAt: (e.receivedAt ?? e.createdAt).toISOString(), poNumber: e.poNumber ?? "", releasedByName: e.releasedByName ?? "", techName: e.techName ?? "", afterHours: (e.afterHours ?? 0) === 1, fifoOverrideReason: e.fifoOverrideReason ?? "", created_at: e.createdAt.toISOString(), updated_at: e.updatedAt.toISOString() };
   });
   const equipmentLogsOut = equipLogs.slice(0, 200).map((l: any) => {
     const eq = equipMap.get(l.equipmentId);
@@ -368,6 +380,25 @@ async function buildState(ctx: any): Promise<GetState> {
     ownerMap.set(key, cur);
   }
   const consignmentByOwner = Array.from(ownerMap.values()).map(o => ({ owner: o.owner, email: o.email, count: o.count, valueCents: o.valueCents, locations: Array.from(o.locations).sort() })).sort((a, b) => b.count - a.count || a.owner.localeCompare(b.owner));
+  // ---- Water heater CAGE (Blue Bear-owned, wh_type set) ----
+  const fifoMs = (e: any) => (e.receivedAt ?? e.createdAt).getTime();
+  const inCageOf = (e: any) => !!e.whType && !e.pulledAt && !e.installedAt && e.status === "available";
+  const cageUnits = (equipmentRows as any[]).filter((e: any) => !!e.whType);
+  const whTypesOut = (whTypeRows as any[]).map((t: any) => {
+    const inCage = cageUnits.filter((e: any) => e.whType === t.key && inCageOf(e)).sort((a: any, b: any) => fifoMs(a) - fifoMs(b) || a.id - b.id);
+    const oldest = inCage[0] ?? null;
+    return { key: t.key, label: t.label, fuel: t.fuel ?? "", gallons: t.gallons ?? 0, par: t.par ?? 0, sort: t.sort ?? 0, inCage: inCage.length, belowPar: inCage.length < (t.par ?? 0), oldestEquipmentId: oldest?.id ?? null, oldestSerial: oldest?.serialNumber ?? "", oldestReceivedAt: oldest ? new Date(fifoMs(oldest)).toISOString() : "", oldestDays: oldest ? Math.floor((Date.now() - fifoMs(oldest)) / 86_400_000) : null };
+  });
+  const whTypeLabel: Map<string, string> = new Map((whTypeRows as any[]).map((t: any) => [t.key, t.label] as [string, string]));
+  // Sign-out log + reorder tracker. Signature URLs are signed for the newest
+  // 100 rows only — one storage call each.
+  const reorderSlice = (whReorderRows as any[]).slice(0, 300);
+  const reorderSigUrls = await Promise.all(reorderSlice.map((r: any, i: number) => (i < 100 ? signed(r.signatureBlobKey ?? "") : Promise.resolve(""))));
+  const whReordersOut = reorderSlice.map((r: any, i: number) => ({ id: r.id, whType: r.whType, whTypeLabel: whTypeLabel.get(r.whType) ?? r.whType, equipmentId: r.equipmentId, serialNumber: (r.serialNumber || equipMap.get(r.equipmentId)?.serialNumber) ?? "", model: equipMap.get(r.equipmentId)?.brandModel ?? "", jobNumber: r.jobNumber ?? "", status: r.status, poNumber: r.poNumber ?? "", techName: r.techName ?? "", releasedByName: r.releasedByName ?? "", afterHours: (r.afterHours ?? 0) === 1, fifoOverrideReason: r.fifoOverrideReason ?? "", signatureUrl: reorderSigUrls[i] ?? "", created_at: r.createdAt.toISOString(), orderedAt: r.orderedAt ? r.orderedAt.toISOString() : "", orderedBy: r.orderedBy ?? "", receivedAt: r.receivedAt ? r.receivedAt.toISOString() : "", receivedBy: r.receivedBy ?? "" }));
+  const whCountsOut = (whCountRows as any[]).slice(0, 10).map((c: any) => {
+    const lines = (whCountLineRows as any[]).filter((l: any) => l.countId === c.id);
+    return { id: c.id, startedBy: c.startedBy ?? "", started_at: c.startedAt.toISOString(), finishedBy: c.finishedBy ?? "", finished_at: c.finishedAt ? c.finishedAt.toISOString() : "", expected: c.expected ?? 0, scanned: c.scanned ?? 0, missing: c.missing ?? 0, unexpected: c.unexpected ?? 0, missingSerials: lines.filter((l: any) => l.result === "missing").map((l: any) => l.serialNumber), unexpectedSerials: lines.filter((l: any) => l.result === "unexpected").map((l: any) => l.serialNumber) };
+  });
   // Warehouse department breakdown — based on warehouse locations only, so the
   // department cards reflect what's actually on warehouse shelves.
   const warehouseLocIds = new Set(locs.filter((l: any) => l.kind === "warehouse").map((l: any) => l.id));
@@ -405,7 +436,10 @@ async function buildState(ctx: any): Promise<GetState> {
     equipmentLogs: equipmentLogsOut,
     consignmentLogs: consignmentLogsOut,
     consignmentByOwner,
-    stats: { totalParts: parts.length, totalLocations: locs.length, lowStockCount, openOrders: orders.filter((o: any) => !["received", "cancelled"].includes(o.status)).length, stagingNeeded: staging.filter((s: any) => s.status === "needed" || s.status === "picking").length, newTechRequests: tech.filter((t: any) => t.status === "new").length, totalUnits: stock.reduce((a: number, s: any) => a + s.quantity, 0), intakeChecks: intakes.length, intakeMismatches: intakes.filter((v: any) => v.verdict === "mismatch").length, totalEquipment: equipmentRows.length, equipmentNeedsRepair: equipmentRows.filter((e: any) => e.status === "needs_repair" || e.status === "out_of_service").length, equipmentMissing: equipmentRows.filter((e: any) => e.status === "missing").length, equipmentInUse: equipmentRows.filter((e: any) => e.status === "in_use").length, equipmentAvailable: equipmentRows.filter((e: any) => e.status === "available").length, pricedParts: parts.filter((p: any) => (p.priceCount ?? 0) > 0).length, pricedLines: pricedLinesCount, unmatchedPricedLines, totalConsigned: consignedRows.length, consignmentPendingEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "pending").length, consignmentQueuedEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "queued" || l.emailStatus === "pending").length, consignmentFailedEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "failed").length, consignmentActionableEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "queued" || l.emailStatus === "pending" || l.emailStatus === "failed").length, consignmentStuckEmails: 0, consignmentValueCents: consignedRows.reduce((a: number, e: any) => a + (e.consignmentValueCents ?? 0), 0), consignmentMoves: (consignLogs as any[]).filter((l: any) => l.action !== "removed").length, whInStock: whRows.filter((e: any) => !e.pulledAt && !e.installedAt && e.status !== "installed").length, whPulled: whRows.filter((e: any) => e.pulledAt && !e.installedAt).length, whPulledOverdue: whRows.filter((e: any) => e.pulledAt && !e.installedAt && Date.now() - e.pulledAt.getTime() > 7 * 86_400_000).length, whStErrors: whRows.filter((e: any) => e.stSync === "error").length, stLive: stLive(), mailLive: mailLive() },
+    whTypes: whTypesOut,
+    whReorders: whReordersOut,
+    whCounts: whCountsOut,
+    stats: { totalParts: parts.length, totalLocations: locs.length, lowStockCount, openOrders: orders.filter((o: any) => !["received", "cancelled"].includes(o.status)).length, stagingNeeded: staging.filter((s: any) => s.status === "needed" || s.status === "picking").length, newTechRequests: tech.filter((t: any) => t.status === "new").length, totalUnits: stock.reduce((a: number, s: any) => a + s.quantity, 0), intakeChecks: intakes.length, intakeMismatches: intakes.filter((v: any) => v.verdict === "mismatch").length, totalEquipment: equipmentRows.length, equipmentNeedsRepair: equipmentRows.filter((e: any) => e.status === "needs_repair" || e.status === "out_of_service").length, equipmentMissing: equipmentRows.filter((e: any) => e.status === "missing").length, equipmentInUse: equipmentRows.filter((e: any) => e.status === "in_use").length, equipmentAvailable: equipmentRows.filter((e: any) => e.status === "available").length, pricedParts: parts.filter((p: any) => (p.priceCount ?? 0) > 0).length, pricedLines: pricedLinesCount, unmatchedPricedLines, totalConsigned: consignedRows.length, consignmentPendingEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "pending").length, consignmentQueuedEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "queued" || l.emailStatus === "pending").length, consignmentFailedEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "failed").length, consignmentActionableEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "queued" || l.emailStatus === "pending" || l.emailStatus === "failed").length, consignmentStuckEmails: 0, consignmentValueCents: consignedRows.reduce((a: number, e: any) => a + (e.consignmentValueCents ?? 0), 0), consignmentMoves: (consignLogs as any[]).filter((l: any) => l.action !== "removed").length, whInStock: whRows.filter((e: any) => !e.pulledAt && !e.installedAt && e.status !== "installed").length, whPulled: whRows.filter((e: any) => e.pulledAt && !e.installedAt).length, whPulledOverdue: whRows.filter((e: any) => e.pulledAt && !e.installedAt && Date.now() - e.pulledAt.getTime() > 7 * 86_400_000).length, whStErrors: whRows.filter((e: any) => e.stSync === "error").length, whCageInCage: cageUnits.filter(inCageOf).length, whCageBelowPar: whTypesOut.filter((t: any) => t.belowPar).length, whCageSignedOut: cageUnits.filter((e: any) => e.pulledAt && !e.installedAt).length, whOpenReorders: (whReorderRows as any[]).filter((r: any) => r.status === "open" || r.status === "ordered").length, stLive: stLive(), mailLive: mailLive() },
     warehouseDepartments,
   };
 }
@@ -462,6 +496,20 @@ async function insertConsignmentLog(db: any, args: { equipmentId: number; owner:
 const etDate = (d: Date) => d.toLocaleDateString("en-US", { timeZone: "America/New_York" });
 const etIsoDay = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
 
+// ---- Water heater cage clock ----
+// After hours per Chris (2026-10-29): anything outside Mon–Fri 7:00 AM–5:00 PM
+// Eastern. Tests replace whClock.now to pin the time.
+export const whClock = { now: () => new Date() };
+export function isAfterHours(d: Date): boolean {
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", hour12: false }).formatToParts(d);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  const weekday = get("weekday");
+  const hour = Number(get("hour")) % 24; // some engines print midnight as "24"
+  if (weekday === "Sat" || weekday === "Sun") return true;
+  return hour < 7 || hour >= 17;
+}
+const CAGE_RELEASE_ROLES = new Set(["ADMIN", "MANAGER", "WAREHOUSE"]);
+
 // Writes an installed consigned water heater onto the customer's installed
 // equipment in ServiceTitan. Guards against the two expensive mistakes:
 //  - duplicates: an atomic claim (stSync → "syncing") lets only one sync run;
@@ -501,13 +549,13 @@ async function syncWaterHeaterToSt(db: any, equipmentId: number, opts: { confirm
       const created = await stCreateInstalledEquipment({
         locationId: stLocationId, customerId: stCustomerId, name: u.name, installedOn: u.installedAt.toISOString(),
         manufacturer: brand && u.brandModel.includes(" ") ? brand : "", model: u.brandModel, serialNumber: u.serialNumber,
-        memo: `CONSIGNED – ${u.consignmentOwner} – pulled ${u.pulledAt ? etIsoDay(u.pulledAt) : "?"} – job #${u.jobNumber}`,
+        memo: u.isConsigned === 1 ? `CONSIGNED – ${u.consignmentOwner} – pulled ${u.pulledAt ? etIsoDay(u.pulledAt) : "?"} – job #${u.jobNumber}` : `BLUE BEAR cage stock – signed out ${u.pulledAt ? etIsoDay(u.pulledAt) : "?"} – job #${u.jobNumber}`,
       });
       stId = created.id;
     }
     // Saved immediately: from here on a retry can never create a second record.
     await db.update(schema.equipment).set({ stEquipmentId: stId, stJobId, stCustomerId, stLocationId, stSync: "ok", stError: "" }).where(eq(schema.equipment.id, equipmentId));
-    if (stJobId) { try { await stJobNote(stJobId, `Consigned water heater INSTALLED. Serial ${u.serialNumber} added to the customer's equipment.`); } catch { /* best-effort */ } }
+    if (stJobId) { try { await stJobNote(stJobId, `${u.isConsigned === 1 ? "Consigned water heater" : "Water heater"} INSTALLED. Serial ${u.serialNumber} added to the customer's equipment.`); } catch { /* best-effort */ } }
     return { status: "ok", message: "serial added to the ServiceTitan customer" };
   } catch (err) {
     return fail("error", `ServiceTitan sync failed: ${String((err as Error).message ?? err)}`);
@@ -1208,7 +1256,7 @@ export const Actions = {
       const db = ctx.db<typeof schema>();
       const [eqRow] = await db.select().from(schema.equipment).where(eq(schema.equipment.id, args.equipmentId));
       if (!eqRow) return { ok: false, message: "Equipment not found", consignmentLogged: false, consignmentEmailQueued: false };
-      if (isWaterHeater(eqRow) && eqRow.isConsigned === 1) throw new Error("Consigned water heaters move only through Consign → Water heaters (Pull / Install / Return), so billing dates and ServiceTitan stay right");
+      if (isWaterHeater(eqRow) && (eqRow.isConsigned === 1 || eqRow.whType)) throw new Error("Water heaters move only through the Water heaters panel (Sign out / Pull / Install / Return), so FIFO, reorders, billing dates and ServiceTitan stay right");
       const fromLocationId = eqRow.currentLocationId ?? null;
       const toLocationId = args.toLocationId !== null && args.toLocationId !== undefined ? args.toLocationId : fromLocationId;
       // Derive status if not explicitly provided
@@ -1261,7 +1309,7 @@ export const Actions = {
       const db = ctx.db<typeof schema>();
       const [eqRow] = await db.select().from(schema.equipment).where(eq(schema.equipment.id, args.id));
       if (!eqRow) return { ok: false };
-      if (isWaterHeater(eqRow) && eqRow.isConsigned === 1) throw new Error("Consigned water heaters move only through Consign → Water heaters (Pull / Install / Return), so billing dates and ServiceTitan stay right");
+      if (isWaterHeater(eqRow) && (eqRow.isConsigned === 1 || eqRow.whType)) throw new Error("Water heaters move only through the Water heaters panel (Sign out / Pull / Install / Return), so FIFO, reorders, billing dates and ServiceTitan stay right");
       await db.update(schema.equipment).set({ status: args.status, updatedAt: new Date() }).where(eq(schema.equipment.id, args.id));
       await db.insert(schema.equipmentLogs).values({ equipmentId: args.id, equipmentName: eqRow.name, equipmentRemoved: 0, action: "status_change", fromLocationId: eqRow.currentLocationId ?? null, toLocationId: eqRow.currentLocationId ?? null, performedBy: args.performedBy, notes: args.notes || `Status changed ${eqRow.status} → ${args.status}` });
       ctx.invalidateQueries(); return { ok: true };
@@ -1396,6 +1444,9 @@ export const Actions = {
     },
   }),
 
+  // Receives either a CAGE unit (whType set: Blue Bear-owned, arrives on a PO,
+  // fills the oldest open reorder of that type) or a legacy CONSIGNED unit
+  // (no whType: supply house required, old flow untouched).
   whReceive: defineAction({
     request: z.object({
       serialNumber: z.string().trim().min(4, "Serial # is required"),
@@ -1403,7 +1454,9 @@ export const Actions = {
       brand: z.string().default(""),
       gallons: z.string().default(""),
       fuel: z.string().default(""),
-      supplyHouse: z.string().trim().min(1, "Supply house is required"),
+      whType: z.string().trim().default(""),
+      poNumber: z.string().trim().default(""),
+      supplyHouse: z.string().trim().default(""),
       supplyHouseEmail: z.string().default(""),
       warehouseLocationId: z.number().nullable().default(null),
       valueCents: z.number().int().min(0).default(0),
@@ -1413,23 +1466,50 @@ export const Actions = {
     response: z.object({ id: z.number(), message: z.string() }),
     async handler(ctx, args) {
       const db = ctx.db<typeof schema>();
+      const isCage = !!args.whType;
+      let typeRow: any = null;
+      if (isCage) {
+        [typeRow] = await db.select().from(schema.whTypes).where(eq(schema.whTypes.key, args.whType));
+        if (!typeRow) throw new Error(`Unknown water heater type "${args.whType}"`);
+        if (!args.poNumber) throw new Error("PO # is required — cage units arrive on a purchase order");
+      } else if (!args.supplyHouse) {
+        throw new Error("Supply house is required for a consigned unit (or pick a cage type for Blue Bear stock)");
+      }
       const serial = args.serialNumber.toUpperCase();
       const dupes = await db.select({ id: schema.equipment.id, status: schema.equipment.status }).from(schema.equipment).where(eq(schema.equipment.serialNumber, serial));
       if (dupes.length > 0) throw new Error(`Serial ${serial} is already in the system`);
-      const name = ["Water Heater", args.gallons ? `${args.gallons} gal` : "", args.fuel, args.brand ? `(${args.brand})` : ""].filter(Boolean).join(" ");
+      const name = isCage
+        ? ["Water Heater", typeRow.label, args.brand ? `(${args.brand.trim()})` : ""].filter(Boolean).join(" ")
+        : ["Water Heater", args.gallons ? `${args.gallons} gal` : "", args.fuel, args.brand ? `(${args.brand})` : ""].filter(Boolean).join(" ");
+      const now = new Date();
       const [r] = await db.insert(schema.equipment).values({
         name, category: "Water Heater", serialNumber: serial, assetTag: "", brandModel: [args.brand.trim(), args.model.toUpperCase()].filter(Boolean).join(" "),
         status: "available", condition: "new", currentLocationId: args.warehouseLocationId, assignedTo: "", notes: args.notes.trim(),
-        isConsigned: 1, consignmentOwner: args.supplyHouse.trim(), consignmentEmail: args.supplyHouseEmail.trim(), consignmentValueCents: args.valueCents, consignmentNotes: "Consigned water heater",
+        isConsigned: isCage ? 0 : 1,
+        consignmentOwner: isCage ? "" : args.supplyHouse, consignmentEmail: isCage ? "" : args.supplyHouseEmail.trim(),
+        consignmentValueCents: isCage ? 0 : args.valueCents, consignmentNotes: isCage ? "" : "Consigned water heater",
+        whType: isCage ? args.whType : null, receivedAt: now, poNumber: isCage ? args.poNumber : "",
       }).returning({ id: schema.equipment.id }).catch((err: any) => {
         if (String(err?.code ?? err?.cause?.code) === "23505") throw new Error(`Serial ${serial} is already in the system`);
         throw err;
       });
       const id = r!.id;
-      await db.insert(schema.equipmentLogs).values({ equipmentId: id, equipmentName: name, equipmentRemoved: 0, action: "created", fromLocationId: null, toLocationId: args.warehouseLocationId, performedBy: args.performedBy, notes: `Consigned water heater received from ${args.supplyHouse.trim()}` });
-      await insertConsignmentLog(db, { equipmentId: id, owner: args.supplyHouse.trim(), notifyEmail: args.supplyHouseEmail, fromLocationId: null, toLocationId: args.warehouseLocationId, action: "created", performedBy: args.performedBy, notes: "Received into consigned stock", jobRef: "", skipEmail: true });
+      await db.insert(schema.equipmentLogs).values({ equipmentId: id, equipmentName: name, equipmentRemoved: 0, action: "created", fromLocationId: null, toLocationId: args.warehouseLocationId, performedBy: args.performedBy, notes: isCage ? `Cage water heater received into the cage on PO ${args.poNumber}` : `Consigned water heater received from ${args.supplyHouse}` });
+      let reorderMsg = "";
+      if (isCage) {
+        // Fills the OLDEST reorder of this type still waiting (open or ordered).
+        const waiting = (await db.select().from(schema.whReorders).where(and(eq(schema.whReorders.whType, args.whType), inArray(schema.whReorders.status, ["open", "ordered"])))) as any[];
+        const oldest = waiting.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id - b.id)[0];
+        if (oldest) {
+          const [closed] = await db.update(schema.whReorders).set({ status: "received", receivedAt: now, receivedBy: args.performedBy, receivedEquipmentId: id, poNumber: oldest.poNumber || args.poNumber })
+            .where(and(eq(schema.whReorders.id, oldest.id), inArray(schema.whReorders.status, ["open", "ordered"]))).returning({ id: schema.whReorders.id });
+          if (closed) reorderMsg = ` · reorder for job #${oldest.jobNumber || "?"} filled`;
+        }
+      } else {
+        await insertConsignmentLog(db, { equipmentId: id, owner: args.supplyHouse, notifyEmail: args.supplyHouseEmail, fromLocationId: null, toLocationId: args.warehouseLocationId, action: "created", performedBy: args.performedBy, notes: "Received into consigned stock", jobRef: "", skipEmail: true });
+      }
       ctx.invalidateQueries();
-      return { id, message: `Received ${serial}` };
+      return { id, message: `Received ${serial}${reorderMsg}` };
     },
   }),
 
@@ -1468,14 +1548,186 @@ export const Actions = {
     },
   }),
 
+  // ---- Blue Bear CAGE sign-out (owned stock; replaces the paper sheet) ----
+  // FIFO: the server picks the oldest in-cage unit of the type; taking a
+  // different serial needs a written reason. The releaser is the login:
+  // WAREHOUSE / MANAGER / ADMIN during business hours; after hours (outside
+  // Mon–Fri 7–5 ET) any signed-in role, flagged, and the ServiceTitan job
+  // note becomes mandatory — if the note fails, the sign-out fails.
+  whSignOut: defineAction({
+    request: z.object({
+      whType: z.string().trim().min(1, "Pick the water heater type"),
+      equipmentId: z.number().nullable().default(null),
+      jobNumber: z.string().trim().min(1, "Job # is required"),
+      techName: z.string().trim().min(2, "Tech name is required"),
+      signaturePngBase64: z.string().min(100, "The tech's signature is required"),
+      fifoOverrideReason: z.string().trim().default(""),
+      toLocationId: z.number().nullable().default(null),
+    }),
+    response: z.object({ ok: z.boolean(), message: z.string(), serialNumber: z.string(), afterHours: z.boolean() }),
+    async handler(ctx, args) {
+      const db = ctx.db<typeof schema>();
+      const [type] = await db.select().from(schema.whTypes).where(eq(schema.whTypes.key, args.whType));
+      if (!type) throw new Error(`Unknown water heater type "${args.whType}"`);
+      const afterHours = isAfterHours(whClock.now());
+      if (!CAGE_RELEASE_ROLES.has(ctx.user.role) && !afterHours) {
+        throw new Error("Only the warehouse can release cage units during business hours (Mon–Fri 7–5). After hours, the manager releases the key and anyone signed in can sign out here.");
+      }
+      // A bad job # stops the sign-out before anything changes.
+      const st = stLive() ? await stFindJob(args.jobNumber) : null;
+      if (afterHours && !st) throw new Error("After-hours sign-outs must put a note on the ServiceTitan job, and ServiceTitan is off — call the office");
+      // FIFO: oldest in-cage unit of this type goes first.
+      const cage = ((await db.select().from(schema.equipment).where(eq(schema.equipment.whType, args.whType))) as any[])
+        .filter((e) => !e.pulledAt && !e.installedAt && e.status === "available")
+        .sort((a, b) => (a.receivedAt ?? a.createdAt).getTime() - (b.receivedAt ?? b.createdAt).getTime() || a.id - b.id);
+      if (cage.length === 0) throw new Error(`No ${type.label} in the cage — check the reorders list`);
+      const oldest = cage[0]!;
+      const target = args.equipmentId ? cage.find((u) => u.id === args.equipmentId) : oldest;
+      if (!target) throw new Error("That unit isn't in the cage — refresh and scan again");
+      const fifoOverride = target.id !== oldest.id;
+      if (fifoOverride && args.fifoOverrideReason.length < 3) {
+        throw new Error(`FIFO: the oldest ${type.label} is serial ${oldest.serialNumber} — take that one, or give a reason for skipping it`);
+      }
+      const sigKey = `wh-signatures/${target.id}-${Date.now()}.png`;
+      const sigBytes = base64ToBytes(args.signaturePngBase64.replace(/^data:image\/png;base64,/, ""));
+      if (sigBytes.length > 600_000) throw new Error("Signature image is too large — try again");
+      await ctx.blobs.put(sigKey, sigBytes.buffer as ArrayBuffer, { contentType: "image/png" });
+      const now = new Date();
+      const signedOut = await db.transaction(async (tx: any) => {
+        // Conditional update: if another iPad signed this unit out a moment ago, nothing matches.
+        const [u] = await tx.update(schema.equipment).set({
+          status: "in_use", currentLocationId: args.toLocationId ?? null, assignedTo: args.techName, jobNumber: args.jobNumber, pulledAt: now,
+          customerName: st?.customerName ?? "", stJobId: st?.jobId ?? null, stCustomerId: st?.customerId ?? null, stLocationId: st?.locationId ?? null,
+          stSync: "n/a", stError: "", techName: args.techName, releasedBy: ctx.user.id, releasedByName: ctx.user.name,
+          signatureBlobKey: sigKey, afterHours: afterHours ? 1 : 0, fifoOverrideReason: fifoOverride ? args.fifoOverrideReason : "", updatedAt: now,
+        }).where(and(eq(schema.equipment.id, target.id), isNull(schema.equipment.pulledAt), isNull(schema.equipment.installedAt))).returning({ id: schema.equipment.id });
+        if (!u) return false;
+        await tx.insert(schema.equipmentLogs).values({ equipmentId: target.id, equipmentName: target.name, equipmentRemoved: 0, action: "checkout", fromLocationId: target.currentLocationId ?? null, toLocationId: args.toLocationId ?? null, performedBy: ctx.user.name, notes: `Cage sign-out for job #${args.jobNumber} — tech ${args.techName}, released by ${ctx.user.name}${afterHours ? " (AFTER HOURS)" : ""}${fifoOverride ? ` — FIFO skipped: ${args.fifoOverrideReason}` : ""}` });
+        // One wh_reorders row per sign-out: the reorder for this job's PO AND the sign-out log entry.
+        await tx.insert(schema.whReorders).values({ whType: args.whType, equipmentId: target.id, serialNumber: target.serialNumber, jobNumber: args.jobNumber, status: "open", techName: args.techName, releasedBy: ctx.user.id, releasedByName: ctx.user.name, signatureBlobKey: sigKey, afterHours: afterHours ? 1 : 0, fifoOverrideReason: fifoOverride ? args.fifoOverrideReason : "", createdAt: now });
+        // After hours the ST note is part of the sign-out: a failure rolls everything back.
+        if (afterHours) {
+          try {
+            await stJobNote(st!.jobId, `AFTER-HOURS cage sign-out: water heater serial ${target.serialNumber} (${type.label}) signed out by ${args.techName}; key released by a manager; sign-out recorded by ${ctx.user.name}. Reorder this unit on this job's PO.`);
+          } catch (err) {
+            throw new Error(`After-hours sign-outs need the ServiceTitan job note and it failed — nothing was signed out. (${String((err as Error).message ?? err)})`);
+          }
+        }
+        return true;
+      });
+      if (!signedOut) throw new Error(`Serial ${target.serialNumber} was just signed out by someone else — refresh`);
+      let stMsg = st ? "job note added in ServiceTitan" : "ServiceTitan off — job # not verified";
+      if (st && !afterHours) {
+        try { await stJobNote(st.jobId, `Water heater serial ${target.serialNumber} (${type.label}) signed out of the Blue Bear cage ${etDate(now)} by ${args.techName}; released by ${ctx.user.name}. Reorder this unit on this job's PO.`); }
+        catch { stMsg = "ServiceTitan job note failed (unit still signed out)"; }
+      }
+      ctx.invalidateQueries();
+      return { ok: true, message: `Signed out ${target.serialNumber} for job #${args.jobNumber}${afterHours ? " (after hours)" : ""} · reorder opened · ${stMsg}`, serialNumber: target.serialNumber, afterHours };
+    },
+  }),
+
+  // Reorders: mark ordered (needs the PO #) or received. Warehouse or office.
+  whReorderUpdate: defineAction({
+    request: z.object({ reorderId: z.number(), status: z.enum(["ordered", "received"]), poNumber: z.string().trim().default("") }),
+    response: z.object({ ok: z.boolean(), message: z.string() }),
+    async handler(ctx, args) {
+      const db = ctx.db<typeof schema>();
+      const [r] = await db.select().from(schema.whReorders).where(eq(schema.whReorders.id, args.reorderId));
+      if (!r) throw new Error("Reorder not found");
+      const now = new Date();
+      if (args.status === "ordered") {
+        if (!args.poNumber) throw new Error("PO # is required to mark a reorder ordered");
+        const [u] = await db.update(schema.whReorders).set({ status: "ordered", poNumber: args.poNumber, orderedAt: now, orderedBy: ctx.user.name })
+          .where(and(eq(schema.whReorders.id, args.reorderId), eq(schema.whReorders.status, "open"))).returning({ id: schema.whReorders.id });
+        if (!u) throw new Error(`That reorder is already ${r.status} — refresh`);
+        ctx.invalidateQueries();
+        return { ok: true, message: `Reorder marked ordered on PO ${args.poNumber}` };
+      }
+      const [u] = await db.update(schema.whReorders).set({ status: "received", receivedAt: now, receivedBy: ctx.user.name, poNumber: args.poNumber || r.poNumber })
+        .where(and(eq(schema.whReorders.id, args.reorderId), inArray(schema.whReorders.status, ["open", "ordered"]))).returning({ id: schema.whReorders.id });
+      if (!u) throw new Error(`That reorder is already ${r.status} — refresh`);
+      ctx.invalidateQueries();
+      return { ok: true, message: "Reorder marked received" };
+    },
+  }),
+
+  // ---- Tuesday count (7–9 AM; works any day) ----
+  whCountStart: defineAction({
+    request: z.object({}),
+    response: z.object({ countId: z.number(), expected: z.array(z.object({ equipmentId: z.number(), serialNumber: z.string(), whType: z.string(), label: z.string() })) }),
+    async handler(ctx) {
+      const db = ctx.db<typeof schema>();
+      const types = (await db.select().from(schema.whTypes)) as any[];
+      const label: Map<string, string> = new Map(types.map((t: any) => [t.key, t.label] as [string, string]));
+      const expected = ((await db.select().from(schema.equipment).where(isNotNull(schema.equipment.whType))) as any[])
+        .filter((e) => !e.pulledAt && !e.installedAt && e.status === "available")
+        .map((e) => ({ equipmentId: e.id, serialNumber: e.serialNumber, whType: e.whType as string, label: label.get(e.whType) ?? e.whType as string }));
+      const [c] = await db.insert(schema.whCounts).values({ startedBy: ctx.user.name, expected: expected.length }).returning({ id: schema.whCounts.id });
+      ctx.invalidateQueries();
+      return { countId: c!.id, expected };
+    },
+  }),
+
+  whCountScan: defineAction({
+    request: z.object({ countId: z.number(), serial: z.string().trim().min(3, "Scan or type the serial") }),
+    response: z.object({ ok: z.boolean(), result: z.enum(["scanned", "unexpected", "duplicate"]), serialNumber: z.string(), whTypeLabel: z.string(), scannedCount: z.number() }),
+    async handler(ctx, args) {
+      const db = ctx.db<typeof schema>();
+      const [c] = await db.select().from(schema.whCounts).where(eq(schema.whCounts.id, args.countId));
+      if (!c) throw new Error("Count session not found");
+      if (c.finishedAt) throw new Error("That count is already finished — start a new one");
+      const serial = args.serial.toUpperCase();
+      const lines = (await db.select().from(schema.whCountLines).where(eq(schema.whCountLines.countId, args.countId))) as any[];
+      const already = lines.find((l) => l.serialNumber === serial);
+      const scannedCount = lines.filter((l) => l.result !== "missing").length;
+      if (already) return { ok: true, result: "duplicate" as const, serialNumber: serial, whTypeLabel: "", scannedCount };
+      const types = (await db.select().from(schema.whTypes)) as any[];
+      const label: Map<string, string> = new Map(types.map((t: any) => [t.key, t.label] as [string, string]));
+      const unit = ((await db.select().from(schema.equipment).where(eq(schema.equipment.serialNumber, serial))) as any[])
+        .find((e) => !!e.whType && !e.pulledAt && !e.installedAt && e.status === "available");
+      const result = unit ? ("scanned" as const) : ("unexpected" as const);
+      await db.insert(schema.whCountLines).values({ countId: args.countId, equipmentId: unit?.id ?? null, serialNumber: serial, whType: unit?.whType ?? "", result });
+      ctx.invalidateQueries();
+      return { ok: true, result, serialNumber: serial, whTypeLabel: unit ? (label.get(unit.whType) ?? unit.whType) : "", scannedCount: scannedCount + 1 };
+    },
+  }),
+
+  whCountFinish: defineAction({
+    request: z.object({ countId: z.number() }),
+    response: z.object({ ok: z.boolean(), expected: z.number(), scanned: z.number(), missingSerials: z.array(z.string()), unexpectedSerials: z.array(z.string()), message: z.string() }),
+    async handler(ctx, args) {
+      const db = ctx.db<typeof schema>();
+      const lines = (await db.select().from(schema.whCountLines).where(eq(schema.whCountLines.countId, args.countId))) as any[];
+      // Expected is what's in the cage at finish time (a sign-out mid-count moves the unit out of "expected").
+      const expectedUnits = ((await db.select().from(schema.equipment).where(isNotNull(schema.equipment.whType))) as any[])
+        .filter((e) => !e.pulledAt && !e.installedAt && e.status === "available");
+      const scannedSerials = new Set(lines.filter((l) => l.result === "scanned").map((l) => l.serialNumber));
+      const missing = expectedUnits.filter((e) => !scannedSerials.has(e.serialNumber));
+      const unexpectedSerials = lines.filter((l) => l.result === "unexpected").map((l) => l.serialNumber);
+      const now = new Date();
+      const [u] = await db.update(schema.whCounts).set({ finishedAt: now, finishedBy: ctx.user.name, expected: expectedUnits.length, scanned: scannedSerials.size, missing: missing.length, unexpected: unexpectedSerials.length })
+        .where(and(eq(schema.whCounts.id, args.countId), isNull(schema.whCounts.finishedAt))).returning({ id: schema.whCounts.id });
+      if (!u) throw new Error("That count was already finished");
+      for (const m of missing) {
+        await db.insert(schema.whCountLines).values({ countId: args.countId, equipmentId: m.id, serialNumber: m.serialNumber, whType: m.whType ?? "", result: "missing" });
+      }
+      ctx.invalidateQueries();
+      const msg = missing.length === 0 && unexpectedSerials.length === 0
+        ? `Count clean: all ${expectedUnits.length} units accounted for`
+        : `Count finished: ${missing.length} missing, ${unexpectedSerials.length} unexpected`;
+      return { ok: true, expected: expectedUnits.length, scanned: scannedSerials.size, missingSerials: missing.map((m) => m.serialNumber), unexpectedSerials, message: msg };
+    },
+  }),
+
   whInstall: defineAction({
     request: z.object({ equipmentId: z.number(), installedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), performedBy: z.string().default("") }),
     response: z.object({ ok: z.boolean(), message: z.string(), stSync: z.string() }),
     async handler(ctx, args) {
       const db = ctx.db<typeof schema>();
       const [e] = await db.select().from(schema.equipment).where(eq(schema.equipment.id, args.equipmentId));
-      if (!e || !isWaterHeater(e) || e.isConsigned !== 1) throw new Error("That isn't a consigned water heater");
-      if (!e.pulledAt) throw new Error(`Serial ${e.serialNumber} hasn't been pulled for a job yet`);
+      if (!e || !isWaterHeater(e) || (e.isConsigned !== 1 && !e.whType)) throw new Error("That isn't a tracked water heater");
+      const consigned = e.isConsigned === 1;
+      if (!e.pulledAt) throw new Error(`Serial ${e.serialNumber} hasn't been ${consigned ? "pulled" : "signed out"} for a job yet`);
       if (e.installedAt) throw new Error(`Serial ${e.serialNumber} is already installed`);
       // Noon Eastern on the chosen day, so the date never shifts across midnight UTC.
       const installedAt = args.installedOn ? new Date(`${args.installedOn}T17:00:00Z`) : new Date();
@@ -1486,7 +1738,7 @@ export const Actions = {
           .where(and(eq(schema.equipment.id, e.id), isNotNull(schema.equipment.pulledAt), isNull(schema.equipment.installedAt))).returning({ id: schema.equipment.id });
         if (!u) return false;
         await tx.insert(schema.equipmentLogs).values({ equipmentId: e.id, equipmentName: e.name, equipmentRemoved: 0, action: "installed", fromLocationId: e.currentLocationId ?? null, toLocationId: null, performedBy: args.performedBy, notes: `Installed for job #${e.jobNumber}${e.customerName ? ` at ${e.customerName}` : ""}` });
-        await insertConsignmentLog(tx, { equipmentId: e.id, owner: e.consignmentOwner, notifyEmail: e.consignmentEmail, fromLocationId: e.currentLocationId ?? null, toLocationId: null, toNameOverride: e.customerName ? `Customer: ${e.customerName}` : `Customer (job #${e.jobNumber})`, action: "installed", performedBy: args.performedBy, notes: `Installed ${etDate(installedAt)}. Pulled ${etDate(e.pulledAt!)}.`, jobRef: `Job #${e.jobNumber}` });
+        if (consigned) await insertConsignmentLog(tx, { equipmentId: e.id, owner: e.consignmentOwner, notifyEmail: e.consignmentEmail, fromLocationId: e.currentLocationId ?? null, toLocationId: null, toNameOverride: e.customerName ? `Customer: ${e.customerName}` : `Customer (job #${e.jobNumber})`, action: "installed", performedBy: args.performedBy, notes: `Installed ${etDate(installedAt)}. Pulled ${etDate(e.pulledAt!)}.`, jobRef: `Job #${e.jobNumber}` });
         return true;
       });
       if (!done) throw new Error(`Serial ${e.serialNumber} was just updated by someone else — refresh`);
@@ -1514,7 +1766,8 @@ export const Actions = {
     async handler(ctx, args) {
       const db = ctx.db<typeof schema>();
       const [e] = await db.select().from(schema.equipment).where(eq(schema.equipment.id, args.equipmentId));
-      if (!e || !isWaterHeater(e) || e.isConsigned !== 1) throw new Error("That isn't a consigned water heater");
+      if (!e || !isWaterHeater(e) || (e.isConsigned !== 1 && !e.whType)) throw new Error("That isn't a tracked water heater");
+      const consigned = e.isConsigned === 1;
       if (!e.pulledAt || e.installedAt) throw new Error(`Only pulled, not-installed units can be returned (${e.serialNumber} is ${e.installedAt ? "installed" : "in stock"})`);
       const now = new Date();
       const toLocationId = args.toLocationId ?? null;
@@ -1523,11 +1776,18 @@ export const Actions = {
         const [u] = await tx.update(schema.equipment).set({
           status: "available", currentLocationId: toLocationId, assignedTo: "", jobNumber: "", customerName: "", pulledAt: null,
           stJobId: null, stCustomerId: null, stLocationId: null, stSync: "n/a", stError: "", updatedAt: now,
+          // The unit keeps its original received_at, so FIFO still sends it out first.
+          techName: "", releasedBy: "", releasedByName: "", afterHours: 0, fifoOverrideReason: "",
           notes: [e.notes, `Returned ${etDate(now)} from job #${prevJob}${args.reason ? `: ${args.reason}` : ""}`].filter(Boolean).join(" | "),
         }).where(and(eq(schema.equipment.id, e.id), isNotNull(schema.equipment.pulledAt), isNull(schema.equipment.installedAt))).returning({ id: schema.equipment.id });
         if (!u) return false;
         await tx.insert(schema.equipmentLogs).values({ equipmentId: e.id, equipmentName: e.name, equipmentRemoved: 0, action: "checkin", fromLocationId: e.currentLocationId ?? null, toLocationId, performedBy: args.performedBy, notes: `Returned from job #${prevJob} — not installed${args.reason ? ` (${args.reason})` : ""}` });
-        await insertConsignmentLog(tx, { equipmentId: e.id, owner: e.consignmentOwner, notifyEmail: e.consignmentEmail, fromLocationId: e.currentLocationId ?? null, toLocationId, action: "checkin", performedBy: args.performedBy, notes: `Returned to consigned stock — NOT installed on job #${prevJob}. Please void or credit any charge for this serial.${args.reason ? ` Reason: ${args.reason}` : ""}`, jobRef: `Job #${prevJob}` });
+        if (consigned) {
+          await insertConsignmentLog(tx, { equipmentId: e.id, owner: e.consignmentOwner, notifyEmail: e.consignmentEmail, fromLocationId: e.currentLocationId ?? null, toLocationId, action: "checkin", performedBy: args.performedBy, notes: `Returned to consigned stock — NOT installed on job #${prevJob}. Please void or credit any charge for this serial.${args.reason ? ` Reason: ${args.reason}` : ""}`, jobRef: `Job #${prevJob}` });
+        } else {
+          // The unit is back in the cage, so the job no longer needs a replacement.
+          await tx.update(schema.whReorders).set({ status: "cancelled" }).where(and(eq(schema.whReorders.equipmentId, e.id), eq(schema.whReorders.status, "open")));
+        }
         return true;
       });
       if (!done) throw new Error(`Serial ${e.serialNumber} was just updated by someone else — refresh`);

@@ -42,7 +42,9 @@ const BUCKET = "inventory-photos";
 // VIEW_ONLY: read. TECHNICIAN: field actions. WAREHOUSE: day-to-day ops.
 // MANAGER/ADMIN: everything, including deletes and pricing admin.
 const READ = new Set(["getState", "listEntries", "stLookupJob"]);
-const TECH = new Set(["createTechRequest", "analyzePartPhoto", "moveEquipment", "updateEquipmentStatus", "toggleStagingLine", "whPull", "whInstall", "whReturn", "whRetrySt"]);
+// whSignOut is reachable by technicians on purpose: the business-hours
+// warehouse-only rule (and the after-hours exception) lives in the action.
+const TECH = new Set(["createTechRequest", "analyzePartPhoto", "moveEquipment", "updateEquipmentStatus", "toggleStagingLine", "whPull", "whSignOut", "whInstall", "whReturn", "whRetrySt"]);
 const OFFICE_ONLY = new Set([
   "deletePart", "deleteOrder", "deleteStaging", "deleteTechRequest", "deleteEquipment", "deleteIntakeVerification",
   "recalcPricing", "backfillDepartments", "markConsignmentEmailSent", "markConsignmentEmailFailed", "createLocation",
