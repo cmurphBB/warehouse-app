@@ -8,3 +8,4 @@ This app was moved off Muse. Ignore any Muse/"space"/`@hatch` instructions in `H
 - Before pushing: `npm run typecheck && npm test`. For UI changes also `npm run build && bun scripts/ui-check.ts`.
 - Deploy = push to `main` (Vercel builds client + deploys the function). Do not hand-deploy the function with retyped code.
 - Data lives only in Supabase. `db-dump.sql` is the 2026-10-22 Muse snapshot, used by tests.
+- Next up: `docs/BRIEF-water-heater-cage.md` (launch blocker — start with its Step 0).
