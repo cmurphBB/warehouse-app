@@ -1293,12 +1293,31 @@ export const Actions = {
         consignmentLogged = true;
         consignmentEmailQueued = !!email;
       }
+      // ServiceTitan hook (Chris, 2026-10-30): gear signed out to a job — a
+      // space heater, a jetter — gets a note on that job, so the office sees
+      // it from the job record. The job # is any 4+ digit run in the job /
+      // customer field. Best-effort: a failed note never blocks the move.
+      let stMsg = "";
+      const jobNumber = (args.jobRef.match(/\d{4,}/) ?? [])[0] ?? "";
+      if (stLive() && jobNumber && countsAsMove && args.action !== "note") {
+        try {
+          const job = await stFindJob(jobNumber);
+          const locRows = (await db.select().from(schema.locations)) as any[];
+          const locName = (id: number | null) => (id ? locRows.find((l: any) => l.id === id)?.name ?? "?" : "—");
+          const ident = [eqRow.serialNumber ? `S/N ${eqRow.serialNumber}` : "", eqRow.assetTag ? `Tag ${eqRow.assetTag}` : ""].filter(Boolean).join(", ");
+          const verb = args.action === "checkout" ? "SIGNED OUT to this job" : args.action === "checkin" ? "RETURNED from this job" : `moved (${args.action.replace("_", " ")})`;
+          await stJobNote(job.jobId, `Blue Bear equipment ${verb}: ${eqRow.name}${ident ? ` (${ident})` : ""} — ${locName(fromLocationId)} → ${locName(toLocationId)}${args.performedBy.trim() ? `, by ${args.performedBy.trim()}` : ""}.${args.notes.trim() ? ` ${args.notes.trim()}` : ""}`);
+          stMsg = ` · note added to ServiceTitan job #${jobNumber}`;
+        } catch (e) {
+          stMsg = ` · ServiceTitan note failed for job #${jobNumber} — move still logged (${String((e as Error)?.message ?? e).slice(0, 140)})`;
+        }
+      }
       ctx.invalidateQueries();
-      const message = consignmentLogged
+      const message = (consignmentLogged
         ? !consignmentEmailQueued
           ? "Equipment movement logged — consignment move recorded (no owner email on file, notification skipped)"
           : "Equipment movement logged — consignment email sent to the owner"
-        : "Equipment movement logged";
+        : "Equipment movement logged") + stMsg;
       return { ok: true, message, consignmentLogged, consignmentEmailQueued };
     },
   }),

@@ -253,6 +253,21 @@ check("after-hours ST note posted on the job", stNotes.some((n) => /AFTER-HOURS/
 s = await run("getState", {});
 check("after-hours flag stored on the sign-out row", s.whReorders.find((r: any) => r.jobNumber === "900").afterHours === true);
 check("cage stats count the signed-out unit", s.stats.whCageSignedOut >= 1 && s.stats.whOpenReorders >= 1, s.stats.whCageSignedOut);
+
+console.log("generic equipment sign-out posts a ServiceTitan job note");
+const heater = await run("createEquipment", { name: "Space Heater 60k BTU", serialNumber: "SH-60-001", currentLocationId: wh.id });
+const mv1 = await run("moveEquipment", { equipmentId: heater.id, toLocationId: truck.id, action: "checkout", jobRef: "Smith — ST #4242", performedBy: "Mike R." });
+check("checkout with a job # posts the note", mv1.ok && /note added to ServiceTitan job #4242/.test(mv1.message), mv1.message);
+check("note names the gear, serial and move", stNotes.some((n) => /SIGNED OUT to this job/.test(n) && /Space Heater 60k BTU/.test(n) && /SH-60-001/.test(n)), stNotes);
+failNotes = true;
+const mv2 = await run("moveEquipment", { equipmentId: heater.id, toLocationId: wh.id, action: "checkin", jobRef: "4242" });
+check("failed ST note never blocks the move", mv2.ok && /note failed/.test(mv2.message) && /move still logged/.test(mv2.message), mv2.message);
+failNotes = false;
+const mv3 = await run("moveEquipment", { equipmentId: heater.id, toLocationId: truck.id, action: "transfer", jobRef: "shop use" });
+check("no job # in the ref → no note attempted", mv3.ok && !/ServiceTitan/.test(mv3.message), mv3.message);
+const notesBefore = stNotes.length;
+await run("moveEquipment", { equipmentId: heater.id, toLocationId: null, action: "note", jobRef: "4242", notes: "filter cleaned" });
+check("note-only entries never post to ST", stNotes.length === notesBefore);
 (globalThis as any).fetch = realFetch2;
 delete envVals.ST_CLIENT_ID; delete envVals.ST_CLIENT_SECRET; delete envVals.ST_APP_KEY; delete envVals.ST_TENANT_ID;
 whClock.now = () => new Date();

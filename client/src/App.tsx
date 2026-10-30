@@ -1555,8 +1555,9 @@ export function App() {
                 <label className="text-xs font-bold text-white/80">Assign to (tech name)
                   <input aria-label="Assign equipment to tech" value={moveForm.assignedTo} onChange={e => setMoveForm(f => ({ ...f, assignedTo: e.target.value }))} placeholder="Leave blank to keep current" className="mt-1 w-full rounded-lg px-3 py-2.5 font-semibold text-black bg-white" />
                 </label>
-                <label className="text-xs font-bold text-white/80">Job / customer (for the log + owner email)
+                <label className="text-xs font-bold text-white/80">Job / customer — a ServiceTitan job # here puts a note on that job
                   <input aria-label="Job or customer for this move" value={moveForm.jobRef} onChange={e => setMoveForm(f => ({ ...f, jobRef: e.target.value }))} placeholder="e.g. Smith — AC swap, ST #12345" className="mt-1 w-full rounded-lg px-3 py-2.5 font-semibold text-black bg-white" />
+                  {/\d{4,}/.test(moveForm.jobRef) && ["checkout", "checkin", "transfer", "repair_out", "repair_in"].includes(moveForm.action) && <p className="text-[11px] font-bold mt-1 text-white/85">📝 A note will be posted on ServiceTitan job #{moveForm.jobRef.match(/\d{4,}/)?.[0]}</p>}
                 </label>
                 <label className="text-xs font-bold text-white/80">Notes — reason for the move
                   <input aria-label="Equipment movement notes" value={moveForm.notes} onChange={e => setMoveForm(f => ({ ...f, notes: e.target.value }))} placeholder="e.g. Recovery for AC swap, due back Friday" className="mt-1 w-full rounded-lg px-3 py-2.5 font-semibold text-black bg-white" />
