@@ -86,7 +86,10 @@ async function complete<S extends z.ZodTypeAny>(prompt: string, opts: { schema: 
       model: env("ANTHROPIC_MODEL") || "claude-sonnet-5-5",
       max_tokens: 2048,
       tools: [{ name: "respond", description: "Return the structured answer.", input_schema: inputSchema }],
-      tool_choice: { type: "tool", name: "respond" },
+      // Current models reject a forced tool_choice; the system line keeps the
+      // answer coming back through the tool anyway.
+      tool_choice: { type: "auto" },
+      system: "Answer ONLY by calling the respond tool with the structured result. Never answer in plain text.",
       messages: [{ role: "user", content }],
     }),
   });
