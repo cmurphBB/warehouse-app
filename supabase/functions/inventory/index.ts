@@ -142,6 +142,14 @@ async function selfTest() {
         try { await stFindJob("0"); out.stCheck = "unexpected: job #0 exists"; }
         catch (e) { out.stCheck = String((e as Error)?.message ?? e); }
       }
+      // Same idea for the AI photo features: one tiny structured call proves
+      // the ANTHROPIC_API_KEY works (or names why it doesn't).
+      if (env("ANTHROPIC_API_KEY")) {
+        try {
+          const r = await complete("Reply with ok set to true.", { schema: z.object({ ok: z.boolean() }) });
+          out.aiCheck = r.ok === true ? "ok" : "unexpected reply";
+        } catch (e) { out.aiCheck = String((e as Error)?.message ?? e); }
+      }
       throw rollback;
     });
   } catch (e) {
