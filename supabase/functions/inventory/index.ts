@@ -14,6 +14,7 @@ import postgres from "postgres";
 import { Actions } from "../../../server/src/actions.ts";
 import { flushOutbox } from "../../../server/src/mail.ts";
 import * as schema from "../../../server/src/schema.ts";
+import { stFindJob, stLive } from "../../../server/src/servicetitan.ts";
 import { runtimeEnv, z, type AppRole, type Ctx, type InferenceImage } from "../../../server/src/sdk.ts";
 
 runtimeEnv.get = (k: string) => Deno.env.get(k) ?? "";
@@ -129,6 +130,12 @@ async function selfTest() {
       const logs = after.consignmentLogs.filter((l: any) => l.equipmentId === r.id);
       out.waterHeater = { received: r.id > 0, installed: i.ok, logRows: logs.length, queuedEmails: logs.filter((l: any) => l.emailStatus === "queued").length };
       out.stLive = after.stats.stLive; out.mailLive = after.stats.mailLive;
+      // Live credential check: "Job #0 not found" proves sign-in, app key,
+      // tenant and the jobs scope all work; an auth error names the broken bit.
+      if (stLive()) {
+        try { await stFindJob("0"); out.stCheck = "unexpected: job #0 exists"; }
+        catch (e) { out.stCheck = String((e as Error)?.message ?? e); }
+      }
       throw rollback;
     });
   } catch (e) {
