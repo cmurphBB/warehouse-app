@@ -284,6 +284,8 @@ export function App() {
   const [stockManageOpen, setStockManageOpen] = useState(false); // admin sections live behind one fold
   const [stagingFilter, setStagingFilter] = useState<"active" | "needs_parts" | "parts_ordered" | "parts_arrived" | "scheduled">("active");
   const [stageFormOpen, setStageFormOpen] = useState(false); // manual staging lives behind a fold
+  const [stagingLimit, setStagingLimit] = useState(50); // hundreds of open ST jobs — page the cards
+  const [stagingSearch, setStagingSearch] = useState("");
   const [boardMoreOpen, setBoardMoreOpen] = useState(false); // board shows the two action lists; the rest folds
   const [ordersMoreOpen, setOrdersMoreOpen] = useState(false); // AI check + PO import fold on the Orders tab
   const [orderFormOpen, setOrderFormOpen] = useState(false); // new-order form folds too
@@ -1326,7 +1328,8 @@ export function App() {
 
         {tab === "staging" && (() => {
           const active = data.staging.filter(s => s.status !== "done");
-          const shown = (stagingFilter === "active" ? active : active.filter(s => s.status === stagingFilter)).slice().sort((a, b) => (b.created_at > a.created_at ? 1 : -1));
+          let shown = (stagingFilter === "active" ? active : active.filter(s => s.status === stagingFilter)).slice().sort((a, b) => (b.created_at > a.created_at ? 1 : -1));
+          if (stagingSearch.trim()) { const q = stagingSearch.toLowerCase(); shown = shown.filter(s => s.customer.toLowerCase().includes(q) || s.stJobNumber.includes(q) || s.notes.toLowerCase().includes(q)); }
           const STAGE_STEPS = [["needs_parts", "Needs parts"], ["parts_ordered", "Parts ordered"], ["parts_arrived", "Parts arrived"], ["scheduled", "Scheduled"]] as const;
           const count = (st: string) => active.filter(s => s.status === st).length;
           return (
@@ -1343,8 +1346,9 @@ export function App() {
                   <button key={st} onClick={() => setStagingFilter(st)} className="px-3 py-2 rounded-full text-sm font-bold" style={{ background: stagingFilter === st ? statusColor(st) : "var(--surface)", color: stagingFilter === st ? "#fff" : "var(--text)", border: "1px solid var(--border)" }}>{label} ({count(st)})</button>
                 ))}
               </div>
-              {shown.length === 0 ? <p className="mt-3 rounded-xl p-4 text-sm font-semibold" style={{ background: "var(--surface)", color: "var(--dim)" }}>{active.length === 0 ? "Nothing to stage — hit Refresh to pull open ServiceTitan jobs, or stage one manually below." : "No jobs in this stage."}</p> : (
-                <div className="mt-3 space-y-3">{shown.map(s => {
+              <input value={stagingSearch} onChange={e => { setStagingSearch(e.target.value); setStagingLimit(50); }} placeholder="Search customer, job #, notes…" className="mt-2 w-full rounded-xl px-4 py-3 font-semibold outline-none" style={{ background: "var(--surface)", border: "1px solid var(--border)" }} />
+              {shown.length === 0 ? <p className="mt-3 rounded-xl p-4 text-sm font-semibold" style={{ background: "var(--surface)", color: "var(--dim)" }}>{active.length === 0 ? "Nothing to stage — hit Refresh to pull open ServiceTitan jobs, or stage one manually below." : "No jobs match."}</p> : (
+                <div className="mt-3 space-y-3">{shown.slice(0, stagingLimit).map(s => {
                   const pulled = s.lines.filter(l => l.pulled).length;
                   return <div key={s.id} className="rounded-2xl p-4" style={{ background: "var(--surface)", border: "1px solid var(--border)", borderLeft: `4px solid ${statusColor(s.status)}` }}>
                     <div className="flex items-start justify-between gap-3">
@@ -1377,7 +1381,9 @@ export function App() {
                       <button aria-label={`Delete staging job for ${s.customer}`} onClick={() => { deleteStage.mutate(s.id); }} className="px-2.5 py-2 rounded-lg text-xs font-bold ml-auto" style={{ color: "#C1272D" }}>Delete</button>
                     </div>
                   </div>;
-                })}</div>
+                })}
+                {shown.length > stagingLimit && <button onClick={() => setStagingLimit(n => n + 50)} className="w-full py-3 rounded-xl text-sm font-bold" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>Show next 50 — {shown.length - stagingLimit} more</button>}
+                </div>
               )}
             </section>
 
