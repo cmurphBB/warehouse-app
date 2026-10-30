@@ -6,7 +6,9 @@ import { AuthGate } from "./Auth";
 import "./theme.css";
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { staleTime: 15_000, refetchOnWindowFocus: true, retry: 1 } },
+  // getState is the one heavy query: a longer staleTime stops iPad focus
+  // changes from refiring it, and mutations refresh it explicitly anyway.
+  defaultOptions: { queries: { staleTime: 60_000, refetchOnWindowFocus: true, retry: 1 } },
 });
 
 const rootEl = document.getElementById("root");

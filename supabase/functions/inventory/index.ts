@@ -34,7 +34,9 @@ function jsonMaybeGzip(req: Request, body: unknown): Response {
   return new Response(stream, { status: 200, headers: { ...cors, "Content-Type": "application/json", "Content-Encoding": "gzip", Vary: "Accept-Encoding" } });
 }
 
-const sqlClient = postgres(env("SUPABASE_DB_URL"), { prepare: false, max: 4, idle_timeout: 20 });
+// max 12: buildState fires ~16 queries in parallel; with only 4 connections
+// they queue in waves and getState pays several extra round trips.
+const sqlClient = postgres(env("SUPABASE_DB_URL"), { prepare: false, max: 12, idle_timeout: 20 });
 const db = drizzle(sqlClient, { schema });
 const admin = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"), { auth: { persistSession: false } });
 const BUCKET = "inventory-photos";
@@ -94,6 +96,10 @@ async function complete<S extends z.ZodTypeAny>(prompt: string, opts: { schema: 
   if (!tool) throw new Error("AI returned no structured answer");
   return opts.schema.parse(tool.input);
 }
+
+// Per-instance auth caches (see the handler): token → verified user, user → profile.
+const userCache = new Map<string, { user: any; exp: number }>();
+const profileCache = new Map<string, { profile: any; exp: number }>();
 
 function sameSecret(a: string, b: string): boolean {
   const x = new TextEncoder().encode(a), y = new TextEncoder().encode(b);
@@ -159,13 +165,33 @@ Deno.serve(async (req) => {
     return json({ ok: true, ...(await flushOutbox(db, 50)) });
   }
 
-  // Who's calling?
+  // Who's calling? getUser + the profile read are two HTTP round trips
+  // (~300 ms) on EVERY call, so both are cached in the instance: a token that
+  // verified five minutes ago is still that user (tokens expire hourly on
+  // their own), and roles change rarely, so profiles are held for 60 s —
+  // a role change shows up within a minute or on the next sign-in.
   const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
-  const { data: auth } = await admin.auth.getUser(jwt);
-  if (!auth?.user) return json({ error: "Please sign in" }, 401);
-  const { data: profile } = await admin.from("profiles").select("full_name, role, active").eq("id", auth.user.id).maybeSingle();
+  let authUser = userCache.get(jwt)?.user;
+  if (!authUser || (userCache.get(jwt)?.exp ?? 0) < Date.now()) {
+    const { data: auth } = await admin.auth.getUser(jwt);
+    authUser = auth?.user ?? null;
+    if (authUser) {
+      if (userCache.size > 500) userCache.clear();
+      userCache.set(jwt, { user: authUser, exp: Date.now() + 5 * 60_000 });
+    }
+  }
+  if (!authUser) return json({ error: "Please sign in" }, 401);
+  let profile = profileCache.get(authUser.id)?.profile;
+  if (!profile || (profileCache.get(authUser.id)?.exp ?? 0) < Date.now()) {
+    const { data: p } = await admin.from("profiles").select("full_name, role, active").eq("id", authUser.id).maybeSingle();
+    profile = p ?? null;
+    if (profile) {
+      if (profileCache.size > 500) profileCache.clear();
+      profileCache.set(authUser.id, { profile, exp: Date.now() + 60_000 });
+    }
+  }
   if (!profile || profile.active === false) return json({ error: "Your account isn't active — ask the office to turn it on" }, 403);
-  const user = { id: auth.user.id, email: auth.user.email ?? "", name: profile.full_name || auth.user.email || "", role: String(profile.role) as AppRole };
+  const user = { id: authUser.id, email: authUser.email ?? "", name: profile.full_name || authUser.email || "", role: String(profile.role) as AppRole };
 
   let body: any;
   try { body = await req.json(); } catch { return json({ error: "Bad request" }, 400); }

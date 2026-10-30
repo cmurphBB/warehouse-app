@@ -279,6 +279,7 @@ export function App() {
   const [stockLimit, setStockLimit] = useState(50);
   const [catalogLimit, setCatalogLimit] = useState(50);
   const [equipLimit, setEquipLimit] = useState(50);
+  const [orderLimit, setOrderLimit] = useState(50); // rendering thousands of PO cards froze the Orders tab
   const [boardLocPick, setBoardLocPick] = useState("");
   const [finderLocPick, setFinderLocPick] = useState("");
   const [showAllLogs, setShowAllLogs] = useState(false);
@@ -1134,9 +1135,9 @@ export function App() {
             </section>
 
             <section>
-              <h2 className="font-display font-black text-lg">Purchase orders ({data.orders.length})</h2>
+              <h2 className="font-display font-black text-lg">Purchase orders ({data.stats.totalOrders})</h2>
               {data.orders.length === 0 ? <p className="mt-2 rounded-xl p-4 text-sm font-semibold" style={{ background: "var(--surface)", color: "var(--dim)" }}>No orders yet. Place your first one below — vendor, lines, and ETA — then track it from ordered → in transit → received.</p> : (
-                <div className="mt-2 space-y-3">{data.orders.map(o => (
+                <div className="mt-2 space-y-3">{data.orders.slice(0, orderLimit).map(o => (
                   <div key={o.id} className="rounded-2xl p-4" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
                     <div className="flex items-start justify-between gap-3">
                       <div><p className="font-display font-bold text-base leading-tight">{o.vendor}</p><p className="text-xs" style={{ color: "var(--dim)" }}>{o.poNumber ? `PO ${o.poNumber} • ` : ""}Placed {fmtDate(o.created_at)}{o.eta ? ` • ETA ${o.eta}` : ""}</p></div>
@@ -1171,7 +1172,9 @@ export function App() {
                       <button aria-label={`Delete order from ${o.vendor}`} onClick={() => { deleteOrder.mutate(o.id); }} className="px-3 py-1.5 rounded-full text-xs font-bold ml-auto" style={{ color: "#C1272D" }}>Delete</button>
                     </div>
                   </div>
-                ))}</div>
+                ))}
+                {data.orders.length > orderLimit && <button onClick={() => setOrderLimit(n => n + 50)} className="w-full py-2.5 rounded-xl text-sm font-bold" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>Show older orders ({data.orders.length - orderLimit} more loaded{data.stats.totalOrders > data.orders.length ? `, ${data.stats.totalOrders} total` : ""})</button>}
+                </div>
               )}
             </section>
 

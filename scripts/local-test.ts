@@ -35,7 +35,7 @@ check("631 parts", s.parts.length === 631, s.parts.length);
 check("619 priced parts", s.stats.pricedParts === 619, s.stats.pricedParts);
 check("20 locations", s.locations.length === 20);
 check("651 equipment", s.equipment.length === 651);
-check("4122 orders", s.orders.length === 4122);
+check("orders payload capped at the newest 1000", s.orders.length === 1000 && s.stats.totalOrders === 4122, { sent: s.orders.length, total: s.stats.totalOrders });
 check("R-454B avg $577.17", s.parts.find((p: any) => p.sku === "454B")?.avgCostCents === 57717);
 
 console.log("recalcPricing is idempotent on the imported data");
