@@ -73,8 +73,14 @@ export const stagingJobs = inv.table("staging_jobs", {
   jobType: text("job_type").notNull().default("Service"),
   jobDate: text("job_date").notNull().default(""),
   truckLocationId: integer("truck_location_id"),
-  status: text("status", { enum: ["needed", "picking", "staged", "loaded", "done"] }).notNull().default("needed"),
+  // Pipeline (2026-10-30): done drops off the list; ServiceTitan completion sets it too.
+  status: text("status", { enum: ["needs_parts", "parts_ordered", "parts_arrived", "scheduled", "done"] }).notNull().default("needs_parts"),
   notes: text("notes").notNull().default(""),
+  // Set when the job was auto-pulled from ServiceTitan by stSyncStagingJobs.
+  stJobId: bigint("st_job_id", { mode: "number" }),
+  stJobNumber: text("st_job_number").notNull().default(""),
+  stJobStatus: text("st_job_status").notNull().default(""),
+  autoPulled: integer("auto_pulled").notNull().default(0),
   createdAt: ts("created_at").notNull().defaultNow(),
 });
 

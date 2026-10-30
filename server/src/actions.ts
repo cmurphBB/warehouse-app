@@ -2,7 +2,7 @@ import { and, asc, desc, eq, inArray, isNotNull, isNull, lt, or } from "drizzle-
 import * as schema from "./schema.ts";
 import { defineAction, z, type ActionsModule } from "./sdk.ts";
 import { mailLive } from "./mail.ts";
-import { stCreateInstalledEquipment, stFindInstalledEquipmentBySerial, stFindJob, stJobNote, stLive } from "./servicetitan.ts";
+import { stCreateInstalledEquipment, stCustomerNames, stFindInstalledEquipmentBySerial, stFindJob, stJobNote, stJobStatuses, stListOpenJobs, stLive } from "./servicetitan.ts";
 
 export const DEPARTMENTS = ["Pipe & Tubing", "Fittings", "Valves", "HVAC Parts", "Fixtures & Trim", "Pumps, Filters & Water", "Electrical & Controls", "Hardware & Hangers", "Consumables & Safety", "Other"] as const;
 export type Department = typeof DEPARTMENTS[number];
@@ -109,7 +109,7 @@ const partPriceOut = z.object({ partId: z.number(), partName: z.string(), sku: z
 const orderLineOut = z.object({ id: z.number(), orderId: z.number(), partId: z.number().nullable(), partName: z.string(), sku: z.string(), qty: z.number(), receivedQty: z.number(), unitCostCents: z.number() });
 const orderOut = z.object({ id: z.number(), vendor: z.string(), poNumber: z.string(), status: z.string(), eta: z.string(), notes: z.string(), created_at: z.string(), updated_at: z.string(), lines: z.array(orderLineOut), totalQty: z.number(), receivedQty: z.number() });
 const stagingLineOut = z.object({ id: z.number(), stagingId: z.number(), partId: z.number().nullable(), partName: z.string(), qty: z.number(), pulled: z.boolean(), sourceLocationId: z.number().nullable() });
-const stagingOut = z.object({ id: z.number(), customer: z.string(), jobType: z.string(), jobDate: z.string(), truckLocationId: z.number().nullable(), truckName: z.string(), status: z.string(), notes: z.string(), created_at: z.string(), lines: z.array(stagingLineOut) });
+const stagingOut = z.object({ id: z.number(), customer: z.string(), jobType: z.string(), jobDate: z.string(), truckLocationId: z.number().nullable(), truckName: z.string(), status: z.string(), notes: z.string(), stJobNumber: z.string(), stJobStatus: z.string(), autoPulled: z.boolean(), created_at: z.string(), lines: z.array(stagingLineOut) });
 const techOut = z.object({ id: z.number(), techName: z.string(), partDescription: z.string(), qty: z.number(), urgency: z.string(), jobRef: z.string(), status: z.string(), notes: z.string(), imageUrl: z.string(), aiPartName: z.string(), aiEquipment: z.string(), aiConfidence: z.string(), aiNotes: z.string(), created_at: z.string() });
 const intakeOut = z.object({ id: z.number(), orderId: z.number().nullable(), vendor: z.string(), poNumber: z.string(), checkedBy: z.string(), verdict: z.string(), confidence: z.string(), invoiceImageUrl: z.string(), partImageUrl: z.string(), invoiceVendor: z.string(), invoicePoNumber: z.string(), invoiceParts: z.string(), physicalPart: z.string(), summary: z.string(), discrepancies: z.string(), recommendedAction: z.string(), created_at: z.string() });
 const equipmentOut = z.object({ id: z.number(), name: z.string(), category: z.string(), serialNumber: z.string(), assetTag: z.string(), brandModel: z.string(), status: z.string(), condition: z.string(), currentLocationId: z.number().nullable(), currentLocationName: z.string(), currentLocationKind: z.string(), assignedTo: z.string(), notes: z.string(), isConsigned: z.boolean(), consignmentOwner: z.string(), consignmentEmail: z.string(), consignmentValueCents: z.number(), consignmentNotes: z.string(), jobNumber: z.string(), customerName: z.string(), pulledAt: z.string(), installedAt: z.string(), stSync: z.string(), stError: z.string(), stEquipmentId: z.number().nullable(), daysOut: z.number().nullable(), whType: z.string(), receivedAt: z.string(), poNumber: z.string(), releasedByName: z.string(), techName: z.string(), afterHours: z.boolean(), fifoOverrideReason: z.string(), created_at: z.string(), updated_at: z.string() });
@@ -339,7 +339,7 @@ async function buildState(ctx: any): Promise<GetState> {
   const stagingOut = staging.map((s: any) => {
     const lines = stagingLines.filter((sl: any) => sl.stagingId === s.id).map((sl: any) => ({ id: sl.id, stagingId: sl.stagingId, partId: sl.partId ?? null, partName: sl.partName, qty: sl.qty, pulled: sl.pulled === 1, sourceLocationId: sl.sourceLocationId ?? null }));
     const truck = s.truckLocationId ? locMap.get(s.truckLocationId) : null;
-    return { id: s.id, customer: s.customer, jobType: s.jobType, jobDate: s.jobDate, truckLocationId: s.truckLocationId ?? null, truckName: truck?.name ?? "", status: s.status, notes: s.notes, created_at: s.createdAt.toISOString(), lines };
+    return { id: s.id, customer: s.customer, jobType: s.jobType, jobDate: s.jobDate, truckLocationId: s.truckLocationId ?? null, truckName: truck?.name ?? "", status: s.status, notes: s.notes, stJobNumber: s.stJobNumber ?? "", stJobStatus: s.stJobStatus ?? "", autoPulled: (s.autoPulled ?? 0) === 1, created_at: s.createdAt.toISOString(), lines };
   });
   const lowStockCount = stock.filter((s: any) => s.quantity <= s.minQty).length;
   const equipMap: Map<number, any> = new Map(equipmentRows.map((e: any) => [e.id, e] as [number, any]));
@@ -443,7 +443,7 @@ async function buildState(ctx: any): Promise<GetState> {
     whTypes: whTypesOut,
     whReorders: whReordersOut,
     whCounts: whCountsOut,
-    stats: { totalParts: parts.length, totalLocations: locs.length, lowStockCount, openOrders: orders.filter((o: any) => !["received", "cancelled"].includes(o.status)).length, totalOrders: orders.length, stagingNeeded: staging.filter((s: any) => s.status === "needed" || s.status === "picking").length, newTechRequests: tech.filter((t: any) => t.status === "new").length, totalUnits: stock.reduce((a: number, s: any) => a + s.quantity, 0), intakeChecks: intakes.length, intakeMismatches: intakes.filter((v: any) => v.verdict === "mismatch").length, totalEquipment: equipmentRows.length, equipmentNeedsRepair: equipmentRows.filter((e: any) => e.status === "needs_repair" || e.status === "out_of_service").length, equipmentMissing: equipmentRows.filter((e: any) => e.status === "missing").length, equipmentInUse: equipmentRows.filter((e: any) => e.status === "in_use").length, equipmentAvailable: equipmentRows.filter((e: any) => e.status === "available").length, pricedParts: parts.filter((p: any) => (p.priceCount ?? 0) > 0).length, pricedLines: pricedLinesCount, unmatchedPricedLines, totalConsigned: consignedRows.length, consignmentPendingEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "pending").length, consignmentQueuedEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "queued" || l.emailStatus === "pending").length, consignmentFailedEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "failed").length, consignmentActionableEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "queued" || l.emailStatus === "pending" || l.emailStatus === "failed").length, consignmentStuckEmails: 0, consignmentValueCents: consignedRows.reduce((a: number, e: any) => a + (e.consignmentValueCents ?? 0), 0), consignmentMoves: (consignLogs as any[]).filter((l: any) => l.action !== "removed").length, whInStock: whRows.filter((e: any) => !e.pulledAt && !e.installedAt && e.status !== "installed").length, whPulled: whRows.filter((e: any) => e.pulledAt && !e.installedAt).length, whPulledOverdue: whRows.filter((e: any) => e.pulledAt && !e.installedAt && Date.now() - e.pulledAt.getTime() > 7 * 86_400_000).length, whStErrors: whRows.filter((e: any) => e.stSync === "error").length, whCageInCage: cageUnits.filter(inCageOf).length, whCageBelowPar: whTypesOut.filter((t: any) => t.belowPar).length, whCageSignedOut: cageUnits.filter((e: any) => e.pulledAt && !e.installedAt).length, whOpenReorders: (whReorderRows as any[]).filter((r: any) => r.status === "open" || r.status === "ordered").length, stLive: stLive(), mailLive: mailLive() },
+    stats: { totalParts: parts.length, totalLocations: locs.length, lowStockCount, openOrders: orders.filter((o: any) => !["received", "cancelled"].includes(o.status)).length, totalOrders: orders.length, stagingNeeded: staging.filter((s: any) => ["needs_parts", "parts_ordered", "parts_arrived"].includes(s.status)).length, newTechRequests: tech.filter((t: any) => t.status === "new").length, totalUnits: stock.reduce((a: number, s: any) => a + s.quantity, 0), intakeChecks: intakes.length, intakeMismatches: intakes.filter((v: any) => v.verdict === "mismatch").length, totalEquipment: equipmentRows.length, equipmentNeedsRepair: equipmentRows.filter((e: any) => e.status === "needs_repair" || e.status === "out_of_service").length, equipmentMissing: equipmentRows.filter((e: any) => e.status === "missing").length, equipmentInUse: equipmentRows.filter((e: any) => e.status === "in_use").length, equipmentAvailable: equipmentRows.filter((e: any) => e.status === "available").length, pricedParts: parts.filter((p: any) => (p.priceCount ?? 0) > 0).length, pricedLines: pricedLinesCount, unmatchedPricedLines, totalConsigned: consignedRows.length, consignmentPendingEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "pending").length, consignmentQueuedEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "queued" || l.emailStatus === "pending").length, consignmentFailedEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "failed").length, consignmentActionableEmails: (consignLogs as any[]).filter((l: any) => l.emailStatus === "queued" || l.emailStatus === "pending" || l.emailStatus === "failed").length, consignmentStuckEmails: 0, consignmentValueCents: consignedRows.reduce((a: number, e: any) => a + (e.consignmentValueCents ?? 0), 0), consignmentMoves: (consignLogs as any[]).filter((l: any) => l.action !== "removed").length, whInStock: whRows.filter((e: any) => !e.pulledAt && !e.installedAt && e.status !== "installed").length, whPulled: whRows.filter((e: any) => e.pulledAt && !e.installedAt).length, whPulledOverdue: whRows.filter((e: any) => e.pulledAt && !e.installedAt && Date.now() - e.pulledAt.getTime() > 7 * 86_400_000).length, whStErrors: whRows.filter((e: any) => e.stSync === "error").length, whCageInCage: cageUnits.filter(inCageOf).length, whCageBelowPar: whTypesOut.filter((t: any) => t.belowPar).length, whCageSignedOut: cageUnits.filter((e: any) => e.pulledAt && !e.installedAt).length, whOpenReorders: (whReorderRows as any[]).filter((r: any) => r.status === "open" || r.status === "ordered").length, stLive: stLive(), mailLive: mailLive() },
     warehouseDepartments,
   };
 }
@@ -918,14 +918,14 @@ export const Actions = {
     response: z.object({ id: z.number() }),
     async handler(ctx, args) {
       const db = ctx.db<typeof schema>();
-      const [s] = await db.insert(schema.stagingJobs).values({ customer: args.customer.trim(), jobType: args.jobType, jobDate: args.jobDate, truckLocationId: args.truckLocationId, notes: args.notes, status: "needed" }).returning({ id: schema.stagingJobs.id });
+      const [s] = await db.insert(schema.stagingJobs).values({ customer: args.customer.trim(), jobType: args.jobType, jobDate: args.jobDate, truckLocationId: args.truckLocationId, notes: args.notes, status: "needs_parts" }).returning({ id: schema.stagingJobs.id });
       const sid = s!.id;
       for (const l of args.lines) await db.insert(schema.stagingLines).values({ stagingId: sid, partId: l.partId, partName: l.partName, qty: l.qty, sourceLocationId: l.sourceLocationId, pulled: 0 });
       ctx.invalidateQueries(); return { id: sid };
     },
   }),
   updateStagingStatus: defineAction({
-    request: z.object({ id: z.number(), status: z.enum(["needed", "picking", "staged", "loaded", "done"]) }),
+    request: z.object({ id: z.number(), status: z.enum(["needs_parts", "parts_ordered", "parts_arrived", "scheduled", "done"]) }),
     response: z.object({ ok: z.boolean() }),
     async handler(ctx, args) {
       const db = ctx.db<typeof schema>();
@@ -974,8 +974,8 @@ export const Actions = {
         }
         await db.update(schema.stagingLines).set({ pulled: 1 }).where(eq(schema.stagingLines.id, line.id));
       }
-      await db.update(schema.stagingJobs).set({ status: "loaded" }).where(eq(schema.stagingJobs.id, args.stagingId));
-      ctx.invalidateQueries(); return { ok: true, message: "Loaded to truck" };
+      await db.update(schema.stagingJobs).set({ status: "scheduled" }).where(eq(schema.stagingJobs.id, args.stagingId));
+      ctx.invalidateQueries(); return { ok: true, message: "Loaded to truck — job marked scheduled" };
     },
   }),
   deleteStaging: defineAction({
@@ -986,6 +986,50 @@ export const Actions = {
       await db.delete(schema.stagingLines).where(eq(schema.stagingLines.stagingId, args.id));
       await db.delete(schema.stagingJobs).where(eq(schema.stagingJobs.id, args.id));
       ctx.invalidateQueries(); return { ok: true };
+    },
+  }),
+
+  // Pulls every open ServiceTitan job onto the staging list (status
+  // needs_parts), and drops jobs ServiceTitan says are completed or canceled.
+  // Runs on the 15-minute cron and from the Refresh button.
+  stSyncStagingJobs: defineAction({
+    request: z.object({}),
+    response: z.object({ ok: z.boolean(), live: z.boolean(), added: z.number(), completed: z.number(), open: z.number(), message: z.string() }),
+    async handler(ctx) {
+      const db = ctx.db<typeof schema>();
+      if (!stLive()) return { ok: false, live: false, added: 0, completed: 0, open: 0, message: "ServiceTitan is off — job sync skipped" };
+      const open = await stListOpenJobs();
+      const rows = (await db.select().from(schema.stagingJobs)) as any[];
+      const haveStJob = new Set(rows.filter((r) => r.stJobId).map((r) => Number(r.stJobId)));
+      // New open jobs land in needs_parts.
+      const fresh = open.filter((j) => !haveStJob.has(j.jobId));
+      const names = fresh.length ? await stCustomerNames([...new Set(fresh.map((j) => j.customerId))]) : new Map<number, string>();
+      let added = 0;
+      for (const j of fresh) {
+        // The partial unique index on st_job_id makes concurrent syncs safe.
+        const ins = await db.insert(schema.stagingJobs)
+          .values({ customer: names.get(j.customerId) || `ST customer ${j.customerId}`, jobType: "ServiceTitan", jobDate: "", truckLocationId: null, status: "needs_parts", notes: j.summary.slice(0, 300), stJobId: j.jobId, stJobNumber: j.jobNumber, stJobStatus: j.jobStatus, autoPulled: 1 })
+          .returning({ id: schema.stagingJobs.id }).catch(() => null);
+        if (ins) added++;
+      }
+      // Jobs already on the list: refresh the ST status; completed/canceled drop off.
+      const openById = new Map(open.map((j) => [j.jobId, j.jobStatus] as [number, string]));
+      const activeSynced = rows.filter((r) => r.stJobId && r.status !== "done");
+      const missing = activeSynced.filter((r) => !openById.has(Number(r.stJobId))).map((r) => Number(r.stJobId));
+      const looked = missing.length ? await stJobStatuses(missing) : new Map<number, string>();
+      let completed = 0;
+      for (const r of activeSynced) {
+        const stStatus = openById.get(Number(r.stJobId)) ?? looked.get(Number(r.stJobId)) ?? "";
+        if (!stStatus) continue;
+        if (/^(Completed|Cancel)/i.test(stStatus)) {
+          await db.update(schema.stagingJobs).set({ status: "done", stJobStatus: stStatus }).where(eq(schema.stagingJobs.id, r.id));
+          completed++;
+        } else if (stStatus !== r.stJobStatus) {
+          await db.update(schema.stagingJobs).set({ stJobStatus: stStatus }).where(eq(schema.stagingJobs.id, r.id));
+        }
+      }
+      ctx.invalidateQueries();
+      return { ok: true, live: true, added, completed, open: open.length, message: `Synced with ServiceTitan — ${added} new job${added === 1 ? "" : "s"} added, ${completed} completed off the list, ${open.length} open` };
     },
   }),
 
@@ -1470,6 +1514,29 @@ export const Actions = {
   // Receives either a CAGE unit (whType set: Blue Bear-owned, arrives on a PO,
   // fills the oldest open reorder of that type) or a legacy CONSIGNED unit
   // (no whType: supply house required, old flow untouched).
+  // Reads a water heater data plate photo so Receive prefills itself instead
+  // of someone keying serial / model / brand / size off the sticker.
+  whReadDataPlate: defineAction({
+    request: z.object({ dataBase64: z.string().min(100, "Photo required"), mimeType: z.enum(["image/jpeg", "image/png"]).default("image/jpeg") }),
+    response: z.object({ serialNumber: z.string(), model: z.string(), brand: z.string(), gallons: z.string(), fuel: z.string(), confidence: z.string(), notes: z.string() }),
+    async handler(ctx, args) {
+      const plate = z.object({
+        serialNumber: z.string().describe("Serial number EXACTLY as printed, no spaces. Empty if unreadable."),
+        model: z.string().describe("Model number EXACTLY as printed. Empty if unreadable."),
+        brand: z.string().describe("Manufacturer, e.g. Bradford White, Rheem, A.O. Smith, State, Navien"),
+        gallons: z.string().describe("Tank capacity in gallons, digits only. Empty for tankless or unknown."),
+        fuel: z.enum(["Gas", "Electric", "Propane", "Heat pump", "Tankless", ""]).describe("Energy source / type. Tankless for tankless units."),
+        confidence: z.enum(["high", "medium", "low"]).describe("How sure you are of serial AND model"),
+        notes: z.string().describe("One short sentence on anything unreadable, cut off, or ambiguous; empty if clean"),
+      });
+      const r = await ctx.inference.complete(
+        "This photo shows a water heater data plate (rating plate / spec sticker). Read it and return the fields. Copy serial and model exactly as printed — never guess missing characters; leave a field empty instead.",
+        { schema: plate, images: [{ dataBase64: args.dataBase64, mimeType: args.mimeType, caption: "Water heater data plate" }] },
+      );
+      return { serialNumber: (r.serialNumber ?? "").replace(/\s+/g, "").toUpperCase(), model: (r.model ?? "").trim().toUpperCase(), brand: (r.brand ?? "").trim(), gallons: (r.gallons ?? "").replace(/\D/g, ""), fuel: r.fuel ?? "", confidence: r.confidence, notes: (r.notes ?? "").trim() };
+    },
+  }),
+
   whReceive: defineAction({
     request: z.object({
       serialNumber: z.string().trim().min(4, "Serial # is required"),

@@ -54,6 +54,50 @@ export async function stJobNote(jobId: number, text: string): Promise<void> {
   await st(`jpm/v2/tenant/{tenant}/jobs/${jobId}/notes`, { method: "POST", body: JSON.stringify({ text }) });
 }
 
+export type StOpenJob = { jobId: number; jobNumber: string; customerId: number; jobStatus: string; summary: string };
+
+/** Every open (not completed/canceled) job, from the last 60 days of modifications. */
+export async function stListOpenJobs(maxPages = 5): Promise<StOpenJob[]> {
+  const since = new Date(Date.now() - 60 * 86_400_000).toISOString();
+  const out: StOpenJob[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const r = await st(`jpm/v2/tenant/{tenant}/jobs?page=${page}&pageSize=200&modifiedOnOrAfter=${encodeURIComponent(since)}&sort=-modifiedOn`);
+    for (const j of r.data ?? []) {
+      const status = String(j.jobStatus ?? "");
+      if (/^(Completed|Cancel)/i.test(status) || !status) continue;
+      out.push({ jobId: j.id, jobNumber: String(j.jobNumber ?? j.number ?? j.id), customerId: j.customerId, jobStatus: status, summary: String(j.summary ?? "") });
+    }
+    if (!r.hasMore) break;
+  }
+  return out;
+}
+
+/** Customer display names, batched 50 per call. */
+export async function stCustomerNames(ids: number[]): Promise<Map<number, string>> {
+  const map = new Map<number, string>();
+  for (let i = 0; i < ids.length; i += 50) {
+    const batch = ids.slice(i, i + 50);
+    try {
+      const r = await st(`crm/v2/tenant/{tenant}/customers?ids=${batch.join(",")}&pageSize=${batch.length}`);
+      for (const c of r.data ?? []) map.set(c.id, String(c.name ?? ""));
+    } catch { /* names are nice-to-have */ }
+  }
+  return map;
+}
+
+/** Current jobStatus for specific jobs (used to catch completions outside the open window). */
+export async function stJobStatuses(ids: number[]): Promise<Map<number, string>> {
+  const map = new Map<number, string>();
+  for (let i = 0; i < ids.length; i += 50) {
+    const batch = ids.slice(i, i + 50);
+    try {
+      const r = await st(`jpm/v2/tenant/{tenant}/jobs?ids=${batch.join(",")}&pageSize=${batch.length}`);
+      for (const j of r.data ?? []) map.set(j.id, String(j.jobStatus ?? ""));
+    } catch { /* leave unknown — they stay on the list until the next sync */ }
+  }
+  return map;
+}
+
 export async function stCreateInstalledEquipment(u: { locationId: number; customerId: number; name: string; installedOn: string; manufacturer: string; model: string; serialNumber: string; memo: string }): Promise<{ id: number | null }> {
   const body: Record<string, unknown> = {
     locationId: u.locationId,

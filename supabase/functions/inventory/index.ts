@@ -173,7 +173,23 @@ Deno.serve(async (req) => {
     if (!row || !sameSecret(String(row.value), cronToken)) return json({ error: "forbidden" }, 403);
     const b = await req.json().catch(() => ({}));
     if (b?.action === "selftest") return json(await selfTest());
-    return json({ ok: true, ...(await flushOutbox(db, 50)) });
+    const flushed = await flushOutbox(db, 50);
+    // The same sweep keeps staging in step with ServiceTitan (new open jobs
+    // on, completed jobs off). Best-effort: a sync failure never blocks mail.
+    let staging: unknown = null;
+    try {
+      const cronCtx: Ctx = {
+        db: () => db, invalidateQueries: () => {},
+        blobs: { put: async () => {}, getUrl: async (k) => k },
+        inference: { complete },
+        mail: { flush: async () => ({ sent: 0, failed: 0, skipped: 0 }) },
+        user: { id: "cron", email: "", name: "ServiceTitan sync", role: "ADMIN" },
+      };
+      staging = await (Actions as any).stSyncStagingJobs.handler(cronCtx, {});
+    } catch (e) {
+      staging = { error: String((e as Error)?.message ?? e) };
+    }
+    return json({ ok: true, ...flushed, staging });
   }
 
   // Who's calling? getUser + the profile read are two HTTP round trips

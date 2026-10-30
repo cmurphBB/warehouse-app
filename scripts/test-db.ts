@@ -19,6 +19,7 @@ export async function makeTestDb() {
   // Cage migration: PGlite has no anon/authenticated roles, so drop the RLS do-block.
   const cage = readFileSync(new URL("../supabase/migrations/20261029190000_wh_cage.sql", import.meta.url), "utf8").replace(/do \$\$[\s\S]*?end \$\$;/g, "");
   await pg.exec(cage);
+  await pg.exec(readFileSync(new URL("../supabase/migrations/20261030160000_staging_st_sync.sql", import.meta.url), "utf8"));
 
   // 2. Data (same conversion as the production import)
   const lite = new Database(":memory:");

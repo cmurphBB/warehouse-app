@@ -6,8 +6,37 @@
 // Return flow with owner emails.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { api, type ApiResponse } from "./api";
+import { api, fileToBase64, type ApiResponse } from "./api";
 import { canManage, useMe } from "./Auth";
+
+// Downscales a camera shot to a small JPEG for the AI data-plate reader.
+async function plateToJpeg(file: File): Promise<{ dataBase64: string; mimeType: "image/jpeg" }> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error("Could not read that photo")); i.src = url; });
+    const maxDim = 1568;
+    let w = img.naturalWidth || 960; let h = img.naturalHeight || 720;
+    if (Math.max(w, h) > maxDim) { const s = maxDim / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
+    const canvas = document.createElement("canvas"); canvas.width = w; canvas.height = h;
+    const cx = canvas.getContext("2d"); if (!cx) throw new Error("Canvas unavailable");
+    cx.drawImage(img, 0, 0, w, h);
+    const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, "image/jpeg", 0.85));
+    if (!blob) throw new Error("Could not process that photo");
+    const { dataBase64 } = await fileToBase64(blob);
+    return { dataBase64, mimeType: "image/jpeg" };
+  } finally { URL.revokeObjectURL(url); }
+}
+
+// Best-guess cage type from what the data plate says.
+function suggestWhType(fuel: string, gallons: string, model: string): string {
+  if (/tankless/i.test(fuel) || /tankless|199/i.test(model)) return "tl199";
+  const g = Number(gallons);
+  const powerVent = /\bPV\b|POWER\s*VENT|PDV|PDX/i.test(model);
+  if (g >= 45 && powerVent) return "50pv";
+  if (/electric/i.test(fuel)) return g >= 45 ? "50e" : g >= 35 ? "40e" : "";
+  if (/gas|propane/i.test(fuel)) return g >= 45 ? "50g" : g >= 35 ? "40g" : "";
+  return "";
+}
 
 type State = ApiResponse<typeof api, "getState">;
 type Equip = State["equipment"][number];
@@ -555,6 +584,29 @@ function ReceiveSheet({ data, warehouses, close, done }: { data: State; warehous
   const [consigned, setConsigned] = useState(false);
   const [f, setF] = useState({ whType: "", serial: "", model: "", brand: "", poNumber: "", gallons: "", fuel: "", supplyHouse: remember("wh_sh"), supplyHouseEmail: remember("wh_she"), warehouseId: warehouses[0]?.id ?? 0 });
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: typeof x[k] === "number" ? Number(e.target.value) : e.target.value }));
+  const plateRef = useRef<HTMLInputElement>(null);
+  const [plateBusy, setPlateBusy] = useState(false);
+  const [plateNote, setPlateNote] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const readPlate = async (file: File) => {
+    setPlateBusy(true); setPlateNote(null);
+    try {
+      const img = await plateToJpeg(file);
+      const r = await api.whReadDataPlate(img);
+      setF((x) => ({
+        ...x,
+        serial: r.serialNumber || x.serial,
+        model: r.model || x.model,
+        brand: r.brand || x.brand,
+        gallons: r.gallons || x.gallons,
+        fuel: r.fuel && r.fuel !== "Tankless" ? r.fuel : x.fuel,
+        whType: consigned ? x.whType : (suggestWhType(r.fuel, r.gallons, r.model) || x.whType),
+      }));
+      const filled = [r.serialNumber && "serial", r.model && "model", r.brand && "brand", r.gallons && "gallons"].filter(Boolean).join(", ");
+      setPlateNote({ ok: true, text: `Read ${filled || "nothing"} (${r.confidence} confidence).${r.notes ? ` ${r.notes}` : ""} Double-check the serial before saving.` });
+    } catch (e) { setPlateNote({ ok: false, text: (e as Error).message }); }
+    setPlateBusy(false);
+  };
 
   const submit = async () => {
     setBusy(true); setErr("");
@@ -579,6 +631,10 @@ function ReceiveSheet({ data, warehouses, close, done }: { data: State; warehous
         <p className="text-sm mt-1" style={{ color: "var(--dim)" }}>{consigned ? "Supply-house owned (consigned) — old flow, owner gets emailed on moves." : "Blue Bear-owned cage stock. It arrives on a PO and fills the oldest waiting reorder of its type."}</p>
 
         <label className="flex items-center gap-2.5 mt-3 cursor-pointer"><input type="checkbox" checked={consigned} onChange={(e) => setConsigned(e.target.checked)} className="h-6 w-6 accent-[#FF6700]" /><span className="text-sm font-black">🤝 This unit is consigned (supply-house owned)</span></label>
+
+        <input ref={plateRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ""; if (file) readPlate(file); }} />
+        <button type="button" disabled={plateBusy} onClick={() => plateRef.current?.click()} className="mt-3 w-full py-3 rounded-xl font-black text-white disabled:opacity-50" style={{ background: PURPLE }}>{plateBusy ? "Reading the data plate…" : "📷 Snap the data plate — AI fills the fields"}</button>
+        {plateNote && <p className="mt-1.5 text-xs font-bold" style={{ color: plateNote.ok ? GREEN : RED }}>{plateNote.text}</p>}
 
         {!consigned && (
           <>

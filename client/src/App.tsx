@@ -94,7 +94,7 @@ function Badge({ children, color }: { children: React.ReactNode; color?: string 
   return <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide" style={{ background: color ? color + "22" : "var(--surface2)", color: color || "var(--dim)", border: `1px solid ${color ? color + "44" : "var(--border)"}` }}>{children}</span>;
 }
 function statusColor(s: string) {
-  const m: Record<string, string> = { received: "#137333", done: "#137333", picked_up: "#137333", staged: "#137333", loaded: "#052A78", ordered: "#052A78", in_transit: "#7C3AED", partial: "#B45309", picking: "#B45309", needed: "#C1272D", new: "#C1272D", urgent: "#C1272D", emergency: "#C1272D", draft: "#5B6B82", cancelled: "#5B6B82", ready: "#137333", available: "#137333", in_use: "#052A78", needs_repair: "#C1272D", out_of_service: "#C1272D", missing: "#7C2D12", installed: "#6A1B9A" };
+  const m: Record<string, string> = { received: "#137333", done: "#137333", picked_up: "#137333", staged: "#137333", loaded: "#052A78", ordered: "#052A78", in_transit: "#7C3AED", partial: "#B45309", picking: "#B45309", needed: "#C1272D", new: "#C1272D", urgent: "#C1272D", emergency: "#C1272D", draft: "#5B6B82", cancelled: "#5B6B82", ready: "#137333", available: "#137333", in_use: "#052A78", needs_repair: "#C1272D", out_of_service: "#C1272D", missing: "#7C2D12", installed: "#6A1B9A", needs_parts: "#C1272D", parts_ordered: "#B45309", parts_arrived: "#052A78", scheduled: "#6A1B9A" };
   return m[s] || "#5B6B82";
 }
 function equipStatusLabel(s: string) { return s.replace(/_/g, " "); }
@@ -282,6 +282,11 @@ export function App() {
   const [orderLimit, setOrderLimit] = useState(50); // rendering thousands of PO cards froze the Orders tab
   const [stockOpenId, setStockOpenId] = useState<number | null>(null); // which minimal stock row is expanded
   const [stockManageOpen, setStockManageOpen] = useState(false); // admin sections live behind one fold
+  const [stagingFilter, setStagingFilter] = useState<"active" | "needs_parts" | "parts_ordered" | "parts_arrived" | "scheduled">("active");
+  const [stageFormOpen, setStageFormOpen] = useState(false); // manual staging lives behind a fold
+  const [boardMoreOpen, setBoardMoreOpen] = useState(false); // board shows the two action lists; the rest folds
+  const [ordersMoreOpen, setOrdersMoreOpen] = useState(false); // AI check + PO import fold on the Orders tab
+  const [orderFormOpen, setOrderFormOpen] = useState(false); // new-order form folds too
   const [boardLocPick, setBoardLocPick] = useState("");
   const [finderLocPick, setFinderLocPick] = useState("");
   const [showAllLogs, setShowAllLogs] = useState(false);
@@ -381,6 +386,7 @@ export function App() {
   const deleteOrder = useMutation({ mutationFn: (id: number) => api.deleteOrder({ id }), onSuccess: inv });
   const createStage = useMutation({ mutationFn: () => api.createStaging({ customer: stageForm.customer, jobType: stageForm.jobType, jobDate: stageForm.jobDate, truckLocationId: stageForm.truckLocationId, notes: stageForm.notes, lines: stageForm.lines.filter(l => l.partName.trim()).map(l => ({ partId: l.partId, partName: l.partName, qty: l.qty, sourceLocationId: null })) }), onSuccess: () => { inv(); setStageForm({ customer: "", jobType: "Service", jobDate: "", truckLocationId: null, notes: "", lines: [{ partName: "", qty: 1, partId: null }] }); setToast("Job staged — pick list created"); } });
   const updateStage = useMutation({ mutationFn: (a: { id: number; status: any }) => api.updateStagingStatus(a), onSuccess: inv });
+  const syncStaging = useMutation({ mutationFn: () => api.stSyncStagingJobs({}), onSuccess: (r) => { inv(); setToast(r.message); }, onError: (e: any) => setToast(e?.message || "Sync failed — try again") });
   const toggleLine = useMutation({ mutationFn: (a: { lineId: number; pulled: boolean }) => api.toggleStagingLine(a), onSuccess: inv });
   const loadTruck = useMutation({ mutationFn: (id: number) => api.loadStagingToTruck({ stagingId: id }), onSuccess: (r) => { inv(); setToast(r.message); } });
   const deleteStage = useMutation({ mutationFn: (id: number) => api.deleteStaging({ id }), onSuccess: inv });
@@ -595,24 +601,6 @@ export function App() {
 
         {tab === "board" && (
           <>
-            {/* AI photo tools */}
-            <section>
-              <h2 className="font-display font-black text-lg">📸 AI photo tools</h2>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                <button onClick={() => setTab("requests")} className="rounded-2xl p-4 text-left text-white" style={{ background: NAVY }}>
-                  <p className="text-2xl leading-none">🔥</p>
-                  <p className="font-display font-black mt-2 leading-tight">Tech photo ID</p>
-                  <p className="text-white/75 text-xs mt-1 font-semibold">Snap a furnace or part — “I need a flame sensor for this” — AI names the exact part and files the request.</p>
-                </button>
-                <button onClick={() => setTab("verify")} className="rounded-2xl p-4 text-left text-white" style={{ background: ORANGE }}>
-                  <p className="text-2xl leading-none">📦</p>
-                  <p className="font-display font-black mt-2 leading-tight">Verify a delivery</p>
-                  <p className="text-white/85 text-xs mt-1 font-semibold">Photo of the PO/invoice + photo of the actual part. AI confirms it's really at the shop and matches.</p>
-                </button>
-              </div>
-              {data.stats.intakeMismatches > 0 && <button onClick={() => setTab("verify")} className="mt-2 w-full rounded-xl p-3 text-left font-bold text-sm text-white" style={{ background: "#C1272D" }}>⚠ {data.stats.intakeMismatches} intake mismatch{data.stats.intakeMismatches > 1 ? "es" : ""} on record — check Verify before stocking those parts</button>}
-              <p className="text-xs mt-2 font-semibold" style={{ color: "var(--dim)" }}>{data.stats.intakeChecks} intake verification{data.stats.intakeChecks === 1 ? "" : "s"} logged so far</p>
-            </section>
             {/* Low stock alerts */}
             <section>
               <div className="flex items-center justify-between"><h2 className="font-display font-black text-lg">⚠ Low stock — reorder soon</h2><button onClick={() => { setTab("stock"); resetStockNav(); setStockQtyFilter("low"); }} className="text-sm font-bold" style={{ color: NAVY }}>See all stock</button></div>
@@ -638,6 +626,33 @@ export function App() {
                   </button>;
                 })}</div>
               )}
+            </section>
+
+            {/* Everything else folds — snapshots live on their own tabs anyway */}
+            {!boardMoreOpen ? (
+              <button onClick={() => setBoardMoreOpen(true)} className="w-full py-3.5 rounded-2xl text-sm font-bold" style={{ background: "var(--surface)", border: "1px dashed var(--border)", color: "var(--dim)" }}>▾ More — AI photo tools · orders · pricing · tech requests · equipment · consignment · departments</button>
+            ) : (<>
+            <div className="flex items-center justify-between">
+              <h3 className="font-display font-black text-lg">More</h3>
+              <button onClick={() => setBoardMoreOpen(false)} className="px-3 py-2 rounded-full text-xs font-bold" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>Hide ✕</button>
+            </div>
+
+            {/* AI photo tools */}
+            <section>
+              <h2 className="font-display font-black text-lg">📸 AI photo tools</h2>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <button onClick={() => setTab("requests")} className="rounded-2xl p-4 text-left text-white" style={{ background: NAVY }}>
+                  <p className="text-2xl leading-none">🔥</p>
+                  <p className="font-display font-black mt-2 leading-tight">Tech photo ID</p>
+                  <p className="text-white/75 text-xs mt-1 font-semibold">Snap a furnace or part — “I need a flame sensor for this” — AI names the exact part and files the request.</p>
+                </button>
+                <button onClick={() => setTab("verify")} className="rounded-2xl p-4 text-left text-white" style={{ background: ORANGE }}>
+                  <p className="text-2xl leading-none">📦</p>
+                  <p className="font-display font-black mt-2 leading-tight">Verify a delivery</p>
+                  <p className="text-white/85 text-xs mt-1 font-semibold">Photo of the PO/invoice + photo of the actual part. AI confirms it's really at the shop and matches.</p>
+                </button>
+              </div>
+              {data.stats.intakeMismatches > 0 && <button onClick={() => setTab("verify")} className="mt-2 w-full rounded-xl p-3 text-left font-bold text-sm text-white" style={{ background: "#C1272D" }}>⚠ {data.stats.intakeMismatches} intake mismatch{data.stats.intakeMismatches > 1 ? "es" : ""} on record — check Verify before stocking those parts</button>}
             </section>
 
             {/* Incoming orders */}
@@ -785,6 +800,7 @@ export function App() {
                 </>
               )}
             </section>
+            </>)}
           </>
         )}
 
@@ -1072,10 +1088,6 @@ export function App() {
 
         {tab === "orders" && (
           <div className="space-y-5">
-            <button onClick={() => setTab("verify")} className="w-full rounded-2xl p-4 text-left text-white" style={{ background: ORANGE }}>
-              <p className="font-display font-black">📸 New delivery? Verify it with AI photos first →</p>
-              <p className="text-white/85 text-sm font-semibold mt-0.5">Photograph the PO/invoice and the actual part — AI confirms the right part is at the shop before you receive it below.</p>
-            </button>
             <section className="rounded-2xl p-4" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
               <h3 className="font-display font-black text-lg">Warehouse intake — receive into</h3>
               <select aria-label="Warehouse location for receiving" value={receiveLoc ?? ""} onChange={e => setReceiveLoc(e.target.value ? Number(e.target.value) : null)} className="mt-2 w-full rounded-lg px-3 py-2.5 font-semibold" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>
@@ -1084,6 +1096,19 @@ export function App() {
               </select>
               {warehouseLocs.length === 0 && <p className="text-xs mt-1 font-semibold" style={{ color: "#C1272D" }}>Add a warehouse location in Stock first so received parts have somewhere to land.</p>}
             </section>
+
+            {/* AI check + daily PO import fold away — receiving is the day-to-day job here */}
+            {!ordersMoreOpen ? (
+              <button onClick={() => setOrdersMoreOpen(true)} className="w-full py-3.5 rounded-2xl text-sm font-bold" style={{ background: "var(--surface)", border: "1px dashed var(--border)", color: "var(--dim)" }}>▾ More — AI delivery check · daily PO price import</button>
+            ) : (<>
+            <div className="flex items-center justify-between">
+              <h3 className="font-display font-black text-lg">More</h3>
+              <button onClick={() => setOrdersMoreOpen(false)} className="px-3 py-2 rounded-full text-xs font-bold" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>Hide ✕</button>
+            </div>
+            <button onClick={() => setTab("verify")} className="w-full rounded-2xl p-4 text-left text-white" style={{ background: ORANGE }}>
+              <p className="font-display font-black">📸 New delivery? Verify it with AI photos first →</p>
+              <p className="text-white/85 text-sm font-semibold mt-0.5">Photograph the PO/invoice and the actual part — AI confirms the right part is at the shop before you receive it below.</p>
+            </button>
 
             {/* Daily PO price match */}
             <section className="rounded-2xl p-4" style={{ background: "var(--surface)", border: "2px solid " + NAVY }}>
@@ -1134,6 +1159,7 @@ export function App() {
                 </div>
               )}
             </section>
+            </>)}
 
             <section>
               <h2 className="font-display font-black text-lg">Purchase orders ({data.stats.totalOrders})</h2>
@@ -1179,8 +1205,12 @@ export function App() {
               )}
             </section>
 
+            <datalist id="parts-list">{sortedParts.map(p => <option key={p.id} value={p.name} />)}</datalist>
+            {!orderFormOpen ? (
+              <button onClick={() => setOrderFormOpen(true)} className="w-full py-3.5 rounded-2xl text-sm font-bold" style={{ background: "var(--surface)", border: "1px dashed var(--border)", color: "var(--dim)" }}>+ Place a new order</button>
+            ) : (
             <section className="rounded-2xl p-4" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-              <h3 className="font-display font-black">Place a new order</h3>
+              <div className="flex items-center justify-between"><h3 className="font-display font-black">Place a new order</h3><button onClick={() => setOrderFormOpen(false)} className="text-xs font-bold" style={{ color: "var(--dim)" }}>Hide ✕</button></div>
               <div className="grid grid-cols-2 gap-2 mt-3">
                 <label className="text-xs font-bold col-span-2">Vendor<input aria-label="Vendor name" value={orderForm.vendor} onChange={e => setOrderForm(f => ({ ...f, vendor: e.target.value }))} placeholder="e.g. F.W. Webb, Ferguson, Brookaire" className="mt-1 w-full rounded-lg px-3 py-2.5 font-semibold" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }} /></label>
                 <label className="text-xs font-bold">PO #<input aria-label="PO number" value={orderForm.poNumber} onChange={e => setOrderForm(f => ({ ...f, poNumber: e.target.value }))} placeholder="Optional" className="mt-1 w-full rounded-lg px-3 py-2.5 font-semibold" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }} /></label>
@@ -1196,12 +1226,12 @@ export function App() {
                     <input aria-label={`Order line ${i + 1} unit cost in dollars`} inputMode="decimal" value={l.unitCost} onChange={e => { const lines = [...orderForm.lines]; lines[i] = { ...lines[i]!, unitCost: e.target.value }; setOrderForm(f => ({ ...f, lines })); }} placeholder="$ ea" className="w-24 rounded-lg px-3 py-2.5 font-semibold" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }} />
                   </div>
                 ))}
-                <datalist id="parts-list">{sortedParts.map(p => <option key={p.id} value={p.name} />)}</datalist>
                 <button onClick={() => setOrderForm(f => ({ ...f, lines: [...f.lines, { partName: "", sku: "", qty: 1, unitCost: "", partId: null }] }))} className="text-sm font-bold" style={{ color: NAVY }}>+ Add line</button>
                 <p className="text-xs font-semibold" style={{ color: "var(--dim)" }}>Add a unit price on a line and it's matched to the material automatically — multiple prices on the same part are averaged.</p>
               </div>
               <button disabled={!orderForm.vendor.trim() || orderForm.lines.every(l => !l.partName.trim())} onClick={() => createOrder.mutate()} className="mt-3 w-full py-3 rounded-xl text-white font-bold disabled:opacity-40" style={{ background: NAVY }}>Place order</button>
             </section>
+            )}
           </div>
         )}
 
@@ -1294,49 +1324,68 @@ export function App() {
           </div>
         )}
 
-        {tab === "staging" && (
+        {tab === "staging" && (() => {
+          const active = data.staging.filter(s => s.status !== "done");
+          const shown = (stagingFilter === "active" ? active : active.filter(s => s.status === stagingFilter)).slice().sort((a, b) => (b.created_at > a.created_at ? 1 : -1));
+          const STAGE_STEPS = [["needs_parts", "Needs parts"], ["parts_ordered", "Parts ordered"], ["parts_arrived", "Parts arrived"], ["scheduled", "Scheduled"]] as const;
+          const count = (st: string) => active.filter(s => s.status === st).length;
+          return (
           <div className="space-y-5">
             <section>
-              <h2 className="font-display font-black text-lg">Staging for scheduled jobs ({data.staging.length})</h2>
-              <p className="text-sm" style={{ color: "var(--dim)" }}>Build the pick list per job, check parts off as you pull them, then load to the truck — stock moves from warehouse to van automatically.</p>
-              {data.staging.length === 0 ? <p className="mt-2 rounded-xl p-4 text-sm font-semibold" style={{ background: "var(--surface)", color: "var(--dim)" }}>No staging jobs yet. Create one below when a job hits the schedule.</p> : (
-                <div className="mt-3 space-y-3">{data.staging.map(s => {
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <h2 className="font-display font-black text-lg">Jobs to stage ({active.length})</h2>
+                <button disabled={syncStaging.isPending} onClick={() => syncStaging.mutate()} className="px-4 py-2.5 rounded-xl text-sm font-black text-white disabled:opacity-50" style={{ background: NAVY }}>{syncStaging.isPending ? "Syncing…" : "↻ Refresh from ServiceTitan"}</button>
+              </div>
+              <p className="text-xs font-semibold mt-0.5" style={{ color: "var(--dim)" }}>Open ServiceTitan jobs land here on their own every 15 minutes; a job marked complete (here or in ServiceTitan) drops off.</p>
+              <div className="flex gap-2 flex-wrap mt-2">
+                <button onClick={() => setStagingFilter("active")} className="px-3 py-2 rounded-full text-sm font-bold" style={{ background: stagingFilter === "active" ? NAVY : "var(--surface)", color: stagingFilter === "active" ? "#fff" : "var(--text)", border: "1px solid var(--border)" }}>All ({active.length})</button>
+                {STAGE_STEPS.map(([st, label]) => (
+                  <button key={st} onClick={() => setStagingFilter(st)} className="px-3 py-2 rounded-full text-sm font-bold" style={{ background: stagingFilter === st ? statusColor(st) : "var(--surface)", color: stagingFilter === st ? "#fff" : "var(--text)", border: "1px solid var(--border)" }}>{label} ({count(st)})</button>
+                ))}
+              </div>
+              {shown.length === 0 ? <p className="mt-3 rounded-xl p-4 text-sm font-semibold" style={{ background: "var(--surface)", color: "var(--dim)" }}>{active.length === 0 ? "Nothing to stage — hit Refresh to pull open ServiceTitan jobs, or stage one manually below." : "No jobs in this stage."}</p> : (
+                <div className="mt-3 space-y-3">{shown.map(s => {
                   const pulled = s.lines.filter(l => l.pulled).length;
-                  const allPulled = s.lines.length > 0 && pulled === s.lines.length;
-                  return <div key={s.id} className="rounded-2xl p-4" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+                  return <div key={s.id} className="rounded-2xl p-4" style={{ background: "var(--surface)", border: "1px solid var(--border)", borderLeft: `4px solid ${statusColor(s.status)}` }}>
                     <div className="flex items-start justify-between gap-3">
-                      <div><p className="font-display font-bold leading-tight">{s.customer}</p><p className="text-xs" style={{ color: "var(--dim)" }}>{s.jobType} • {fmtJobDate(s.jobDate)}{s.truckName ? ` • → ${s.truckName}` : " • No truck assigned"}</p></div>
-                      <Badge color={statusColor(s.status)}>{s.status}</Badge>
+                      <div className="min-w-0">
+                        <p className="font-display font-bold leading-tight">{s.customer}</p>
+                        <p className="text-xs" style={{ color: "var(--dim)" }}>{s.stJobNumber ? `ST job #${s.stJobNumber}${s.stJobStatus ? ` (${s.stJobStatus})` : ""}` : s.jobType}{s.jobDate ? ` • ${fmtJobDate(s.jobDate)}` : ""}{s.truckName ? ` • → ${s.truckName}` : ""}</p>
+                        {s.notes && <p className="text-xs mt-0.5 truncate" style={{ color: "var(--dim)" }}>{s.notes}</p>}
+                      </div>
+                      <Badge color={statusColor(s.status)}>{s.status.replace(/_/g, " ")}</Badge>
                     </div>
-                    {s.notes && <p className="text-sm mt-1" style={{ color: "var(--dim)" }}>{s.notes}</p>}
-                    <div className="mt-2 h-2 rounded-full overflow-hidden" style={{ background: "var(--surface2)" }}><div className="h-full" style={{ width: s.lines.length ? `${(pulled / s.lines.length) * 100}%` : "0%", background: ORANGE }} /></div>
-                    <p className="text-xs font-bold mt-1">{pulled} of {s.lines.length} lines pulled</p>
-                    <div className="mt-2 space-y-1.5">
-                      {s.lines.map(l => {
-                        const avail = l.partId ? data.stock.filter(st => st.partId === l.partId).reduce((a, st) => a + st.quantity, 0) : null;
-                        return <label key={l.id} className="flex items-center gap-3 rounded-lg px-3 py-2.5 cursor-pointer" style={{ background: l.pulled ? "#13733318" : "var(--surface2)" }}>
-                          <input type="checkbox" aria-label={`Mark ${l.partName} pulled for ${s.customer}`} checked={l.pulled} onChange={e => toggleLine.mutate({ lineId: l.id, pulled: e.target.checked })} className="w-5 h-5 accent-[#052A78]" />
-                          <span className={`text-sm font-semibold flex-1 ${l.pulled ? "line-through opacity-60" : ""}`}>{l.partName} ×{l.qty}</span>
-                          {avail !== null && <span className="text-xs font-bold" style={{ color: avail >= l.qty ? "#137333" : "#C1272D" }}>{avail} on hand</span>}
-                        </label>;
-                      })}
-                      {s.lines.length === 0 && <p className="text-sm" style={{ color: "var(--dim)" }}>No lines yet — recreate the job with lines, or track pulls on the next job.</p>}
+                    {s.lines.length > 0 && <>
+                      <div className="mt-2 h-2 rounded-full overflow-hidden" style={{ background: "var(--surface2)" }}><div className="h-full" style={{ width: `${(pulled / s.lines.length) * 100}%`, background: ORANGE }} /></div>
+                      <div className="mt-2 space-y-1.5">
+                        {s.lines.map(l => {
+                          const avail = l.partId ? data.stock.filter(st => st.partId === l.partId).reduce((a, st) => a + st.quantity, 0) : null;
+                          return <label key={l.id} className="flex items-center gap-3 rounded-lg px-3 py-2.5 cursor-pointer" style={{ background: l.pulled ? "#13733318" : "var(--surface2)" }}>
+                            <input type="checkbox" aria-label={`Mark ${l.partName} pulled for ${s.customer}`} checked={l.pulled} onChange={e => toggleLine.mutate({ lineId: l.id, pulled: e.target.checked })} className="w-5 h-5 accent-[#052A78]" />
+                            <span className={`text-sm font-semibold flex-1 ${l.pulled ? "line-through opacity-60" : ""}`}>{l.partName} ×{l.qty}</span>
+                            {avail !== null && <span className="text-xs font-bold" style={{ color: avail >= l.qty ? "#137333" : "#C1272D" }}>{avail} on hand</span>}
+                          </label>;
+                        })}
+                      </div>
+                    </>}
+                    <div className="flex flex-wrap gap-1.5 mt-3 items-center">
+                      {STAGE_STEPS.map(([st, label]) => s.status !== st && (
+                        <button key={st} onClick={() => updateStage.mutate({ id: s.id, status: st })} className="px-2.5 py-2 rounded-lg text-xs font-bold" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>{label}</button>
+                      ))}
+                      {s.truckLocationId && s.lines.length > 0 && s.status !== "scheduled" && <button onClick={() => loadTruck.mutate(s.id)} className="px-2.5 py-2 rounded-lg text-white text-xs font-bold" style={{ background: ORANGE }}>Load to truck →</button>}
+                      <button onClick={() => updateStage.mutate({ id: s.id, status: "done" })} className="px-3 py-2 rounded-lg text-white text-xs font-black" style={{ background: "#137333" }}>Complete ✓</button>
+                      <button aria-label={`Delete staging job for ${s.customer}`} onClick={() => { deleteStage.mutate(s.id); }} className="px-2.5 py-2 rounded-lg text-xs font-bold ml-auto" style={{ color: "#C1272D" }}>Delete</button>
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {s.status === "needed" && <button onClick={() => updateStage.mutate({ id: s.id, status: "picking" })} className="px-3 py-2 rounded-lg text-white text-sm font-bold" style={{ background: NAVY }}>Start picking</button>}
-                      {(s.status === "picking" || s.status === "needed") && <button disabled={!allPulled} onClick={() => updateStage.mutate({ id: s.id, status: "staged" })} className="px-3 py-2 rounded-lg text-sm font-bold disabled:opacity-40" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>Mark staged</button>}
-                      {s.status !== "loaded" && s.status !== "done" && <button disabled={!s.truckLocationId} onClick={() => loadTruck.mutate(s.id)} className="px-3 py-2 rounded-lg text-white text-sm font-bold disabled:opacity-40" style={{ background: ORANGE }}>Load to truck →</button>}
-                      {s.status === "loaded" && <button onClick={() => updateStage.mutate({ id: s.id, status: "done" })} className="px-3 py-2 rounded-lg text-white text-sm font-bold" style={{ background: "#137333" }}>Job done ✓</button>}
-                      <button aria-label={`Delete staging job for ${s.customer}`} onClick={() => { deleteStage.mutate(s.id); }} className="px-3 py-2 rounded-lg text-sm font-bold ml-auto" style={{ color: "#C1272D" }}>Delete</button>
-                    </div>
-                    {!s.truckLocationId && s.status !== "done" && <p className="text-xs mt-1 font-semibold" style={{ color: "#B45309" }}>Assign a truck when creating the job to use Load to truck.</p>}
                   </div>;
                 })}</div>
               )}
             </section>
 
+            {!stageFormOpen ? (
+              <button onClick={() => setStageFormOpen(true)} className="w-full py-3.5 rounded-2xl text-sm font-bold" style={{ background: "var(--surface)", border: "1px dashed var(--border)", color: "var(--dim)" }}>+ Stage a job manually (not from ServiceTitan)</button>
+            ) : (
             <section className="rounded-2xl p-4" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-              <h3 className="font-display font-black">Stage a new job</h3>
+              <div className="flex items-center justify-between"><h3 className="font-display font-black">Stage a new job</h3><button onClick={() => setStageFormOpen(false)} className="text-xs font-bold" style={{ color: "var(--dim)" }}>Hide ✕</button></div>
               <div className="grid grid-cols-2 gap-2 mt-3">
                 <label className="text-xs font-bold col-span-2">Customer / Job<input aria-label="Staging customer" value={stageForm.customer} onChange={e => setStageForm(f => ({ ...f, customer: e.target.value }))} placeholder="e.g. Smith — water heater swap" className="mt-1 w-full rounded-lg px-3 py-2.5 font-semibold" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }} /></label>
                 <label className="text-xs font-bold">Job type<select aria-label="Staging job type" value={stageForm.jobType} onChange={e => setStageForm(f => ({ ...f, jobType: e.target.value }))} className="mt-1 w-full rounded-lg px-3 py-2.5 font-semibold" style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}>{["Service", "Install — Plumbing", "Install — HVAC", "Water Heater", "Drain", "Maintenance", "Other"].map(t => <option key={t}>{t}</option>)}</select></label>
@@ -1356,8 +1405,10 @@ export function App() {
               </div>
               <button disabled={!stageForm.customer.trim()} onClick={() => createStage.mutate()} className="mt-3 w-full py-3 rounded-xl text-white font-bold disabled:opacity-40" style={{ background: NAVY }}>Create staging job</button>
             </section>
+            )}
           </div>
-        )}
+          );
+        })()}
 
         {tab === "requests" && (
           <div className="space-y-5">

@@ -232,11 +232,16 @@ check("after hours with ServiceTitan off is refused", /ServiceTitan is off/.test
 envVals.ST_CLIENT_ID = "id"; envVals.ST_CLIENT_SECRET = "sec"; envVals.ST_APP_KEY = "key"; envVals.ST_TENANT_ID = "t1";
 const stNotes: string[] = [];
 let failNotes = true;
+let stOpenJobs: any[] = [];
+const stJobLookup: Record<number, string> = {};
 const realFetch2 = globalThis.fetch;
 (globalThis as any).fetch = async (url: any, init?: any) => {
   const u = String(url);
   if (u.includes("/connect/token")) return new Response(JSON.stringify({ access_token: "tok", expires_in: 900 }), { status: 200 });
   if (u.includes("/jobs?number=")) { const num = decodeURIComponent(u.split("number=")[1]!.split("&")[0]!); return new Response(JSON.stringify({ data: [{ id: 9001, jobNumber: num, customerId: 77, locationId: 55 }] }), { status: 200 }); }
+  if (u.includes("/jobs?page=")) return new Response(JSON.stringify({ data: stOpenJobs, hasMore: false }), { status: 200 });
+  if (u.includes("/jobs?ids=")) { const ids = decodeURIComponent(u.split("ids=")[1]!.split("&")[0]!).split(",").map(Number); return new Response(JSON.stringify({ data: ids.map((id) => ({ id, jobStatus: stJobLookup[id] ?? "Scheduled" })) }), { status: 200 }); }
+  if (u.includes("/customers?ids=")) return new Response(JSON.stringify({ data: [{ id: 501, name: "Alice Homeowner" }, { id: 502, name: "Bob Builder" }] }), { status: 200 });
   if (u.includes("/customers/")) return new Response(JSON.stringify({ name: "Night Customer" }), { status: 200 });
   if (u.includes("/notes")) { if (failNotes) return new Response("boom", { status: 500 }); stNotes.push(JSON.parse(String(init?.body ?? "{}")).text); return new Response("{}", { status: 200 }); }
   return new Response("{}", { status: 200 });
@@ -268,6 +273,32 @@ check("no job # in the ref → no note attempted", mv3.ok && !/ServiceTitan/.tes
 const notesBefore = stNotes.length;
 await run("moveEquipment", { equipmentId: heater.id, toLocationId: null, action: "note", jobRef: "4242", notes: "filter cleaned" });
 check("note-only entries never post to ST", stNotes.length === notesBefore);
+
+console.log("staging list syncs with ServiceTitan");
+stOpenJobs = [
+  { id: 7001, jobNumber: "7001", customerId: 501, jobStatus: "Scheduled", summary: "WH swap - 50 gal gas" },
+  { id: 7002, jobNumber: "7002", customerId: 502, jobStatus: "InProgress", summary: "" },
+  { id: 7003, jobNumber: "7003", customerId: 501, jobStatus: "Completed", summary: "already done, must be skipped" },
+];
+const sync1 = await run("stSyncStagingJobs", {});
+check("sync pulls open jobs only", sync1.ok && sync1.added === 2 && sync1.open === 2, sync1);
+s = await run("getState", {});
+const auto = s.staging.filter((x: any) => x.autoPulled);
+check("auto jobs land in needs_parts with name + ST job #", auto.length === 2 && auto.every((x: any) => x.status === "needs_parts") && auto.some((x: any) => x.customer === "Alice Homeowner" && x.stJobNumber === "7001" && /WH swap/.test(x.notes)), auto);
+const sync2 = await run("stSyncStagingJobs", {});
+check("re-sync adds no duplicates", sync2.added === 0, sync2);
+const j1 = auto.find((x: any) => x.stJobNumber === "7001");
+await run("updateStagingStatus", { id: j1.id, status: "parts_ordered" });
+await run("updateStagingStatus", { id: j1.id, status: "parts_arrived" });
+s = await run("getState", {});
+check("pipeline statuses stick through a sync", s.staging.find((x: any) => x.id === j1.id).status === "parts_arrived");
+stOpenJobs = stOpenJobs.filter((j) => j.id === 7001); // 7002 left the open window…
+stJobLookup[7002] = "Completed";                      // …because ServiceTitan completed it
+const sync3 = await run("stSyncStagingJobs", {});
+s = await run("getState", {});
+check("ST-completed job drops off the list", sync3.completed === 1 && s.staging.find((x: any) => x.stJobNumber === "7002").status === "done", sync3);
+check("the job someone is working stays put", s.staging.find((x: any) => x.id === j1.id).status === "parts_arrived");
+check("stats count the active pipeline", s.stats.stagingNeeded >= 1);
 (globalThis as any).fetch = realFetch2;
 delete envVals.ST_CLIENT_ID; delete envVals.ST_CLIENT_SECRET; delete envVals.ST_APP_KEY; delete envVals.ST_TENANT_ID;
 whClock.now = () => new Date();
