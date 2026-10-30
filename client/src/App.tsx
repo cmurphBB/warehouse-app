@@ -280,6 +280,8 @@ export function App() {
   const [catalogLimit, setCatalogLimit] = useState(50);
   const [equipLimit, setEquipLimit] = useState(50);
   const [orderLimit, setOrderLimit] = useState(50); // rendering thousands of PO cards froze the Orders tab
+  const [stockOpenId, setStockOpenId] = useState<number | null>(null); // which minimal stock row is expanded
+  const [stockManageOpen, setStockManageOpen] = useState(false); // admin sections live behind one fold
   const [boardLocPick, setBoardLocPick] = useState("");
   const [finderLocPick, setFinderLocPick] = useState("");
   const [showAllLogs, setShowAllLogs] = useState(false);
@@ -345,7 +347,19 @@ export function App() {
   const setPartDept = useMutation({ mutationFn: (a: { partId: number; department: string }) => (api as any).setPartDepartment(a), onSuccess: inv });
   const createLoc = useMutation({ mutationFn: () => api.createLocation(locForm), onSuccess: () => { inv(); setLocForm({ name: "", kind: "warehouse", assignedTo: "" }); setToast("Location added"); } });
   const upsertStock = useMutation({ mutationFn: () => api.upsertStock(stockForm), onSuccess: () => { inv(); setToast("Stock updated"); } });
-  const adjustStock = useMutation({ mutationFn: (a: { stockId: number; delta: number }) => api.adjustStock(a), onSuccess: inv });
+  // Optimistic: the count moves the instant the button is tapped; the
+  // background refetch reconciles, and an error puts the old number back.
+  const adjustStock = useMutation({
+    mutationFn: (a: { stockId: number; delta: number }) => api.adjustStock(a),
+    onMutate: async (a) => {
+      await qc.cancelQueries({ queryKey: ["state"] });
+      const prev = qc.getQueryData<State>(["state"]);
+      if (prev) qc.setQueryData<State>(["state"], { ...prev, stock: prev.stock.map(s => s.id === a.stockId ? { ...s, quantity: Math.max(0, s.quantity + a.delta) } : s) });
+      return { prev };
+    },
+    onError: (_e, _a, ctx) => { if (ctx?.prev) qc.setQueryData(["state"], ctx.prev); },
+    onSettled: () => inv(),
+  });
   const bulkTransfer = useMutation({
     mutationFn: () => api.transferStockBulk({ fromLocationId: bulkFromId, toLocationId: bulkToId, items: Object.entries(bulkQty).map(([partId, qty]) => ({ partId: Number(partId), qty })) }),
     onSuccess: (r) => {
@@ -531,7 +545,6 @@ export function App() {
 
   // Stock navigation: finder (pick a location) → department (warehouse) → parts.
   const finderMode = stockLocFilter === "all" && stockDeptFilter === "all" && stockSubcatFilter === "all" && stockQtyFilter === "all" && !search.trim();
-  const warehouseDeptMode = isWarehouseSelected && stockDeptFilter === "all" && stockQtyFilter === "all" && !search.trim();
   const locCounts = (locId: number) => { const rows = data.stock.filter(s => s.locationId === locId); return { rows: rows.length, units: rows.reduce((a, s) => a + s.quantity, 0), low: rows.filter(s => s.quantity <= s.minQty).length }; };
   const openLocation = (l: LocRow) => { setStockLocFilter(l.id); setStockDeptFilter("all"); setStockSubcatFilter("all"); setStockQtyFilter("all"); };
   const resetStockNav = () => { setStockLocFilter("all"); setStockDeptFilter("all"); setStockSubcatFilter("all"); setStockQtyFilter("all"); setSearch(""); };
@@ -576,7 +589,7 @@ export function App() {
           <section className="rounded-2xl p-5 border-2 border-dashed" style={{ background: "var(--surface)", borderColor: ORANGE }}>
             <h2 className="font-display font-black text-lg">Start here — set up your locations</h2>
             <p className="text-sm mt-1" style={{ color: "var(--dim)" }}>Add your warehouse first, then each van/truck. After that you can catalog parts, set stock levels, place orders, stage jobs, and take tech requests. Everything below is ready to use — it just starts empty because it's your real inventory.</p>
-            <button onClick={() => setTab("stock")} className="mt-3 px-5 py-3 rounded-xl text-white font-bold" style={{ background: ORANGE }}>Set up locations & parts →</button>
+            <button onClick={() => { setTab("stock"); setStockManageOpen(true); }} className="mt-3 px-5 py-3 rounded-xl text-white font-bold" style={{ background: ORANGE }}>Set up locations & parts →</button>
           </section>
         )}
 
@@ -826,42 +839,19 @@ export function App() {
                 )}
               </section>
             ) : (<>
-            {/* Warehouse departments — drill level 2, only inside the warehouse before a department is picked */}
-            {warehouseDeptMode && (
-            <section className="rounded-2xl p-4" style={{ background: NAVY }}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="font-display font-black text-white text-lg leading-tight">🏭 Warehouse departments</h2>
-                  <p className="text-white/75 text-xs font-semibold mt-0.5">Norwell Warehouse is split into 9 departments. Pick one, then pick a shelf category — no more scrolling 658 parts.</p>
+            {/* Warehouse departments — compact chips, only inside the warehouse */}
+            {isWarehouseSelected && !search.trim() && (
+              <section>
+                <div className="flex gap-2 flex-wrap items-center">
+                  <span className="text-[11px] font-black uppercase tracking-wide" style={{ color: "var(--dim)" }}>Department:</span>
+                  <button onClick={() => { setStockDeptFilter("all"); setStockSubcatFilter("all"); }} aria-pressed={stockDeptFilter === "all"} className="px-3 py-2 rounded-full text-sm font-bold" style={{ background: stockDeptFilter === "all" ? NAVY : "var(--surface)", color: stockDeptFilter === "all" ? "#fff" : "var(--text)", border: "1px solid var(--border)" }}>All</button>
+                  {data.warehouseDepartments.map(d => (
+                    <button key={d.department} onClick={() => goToWarehouseDept(d.department)} aria-pressed={stockDeptFilter === d.department} className="px-3 py-2 rounded-full text-sm font-bold" style={{ background: stockDeptFilter === d.department ? NAVY : "var(--surface)", color: stockDeptFilter === d.department ? "#fff" : "var(--text)", border: "1px solid var(--border)" }}>
+                      {d.department} {d.lowStockCount > 0 ? <span style={{ color: stockDeptFilter === d.department ? "#FFB4A8" : "#C1272D" }}>•{d.lowStockCount}</span> : ""}
+                    </button>
+                  ))}
                 </div>
-                {stockDeptFilter !== "all" && <button onClick={() => { setStockDeptFilter("all"); setStockSubcatFilter("all"); }} className="shrink-0 px-3 py-1.5 rounded-full text-xs font-black text-white" style={{ background: ORANGE }}>Show all ✕</button>}
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">
-                <button onClick={() => { if (warehouseId) setStockLocFilter(warehouseId); setStockDeptFilter("all"); setStockSubcatFilter("all"); }} aria-label="Show all warehouse departments" className="rounded-xl p-3 text-left" style={{ background: stockDeptFilter === "all" && isWarehouseSelected ? "#fff" : "rgba(255,255,255,0.12)", color: stockDeptFilter === "all" && isWarehouseSelected ? NAVY : "#fff", border: "1px solid rgba(255,255,255,0.25)" }}>
-                  <p className="font-display font-black leading-tight">All departments</p>
-                  <p className={`text-[11px] mt-0.5 font-semibold ${stockDeptFilter === "all" && isWarehouseSelected ? "" : "text-white/70"}`}>{data.parts.length} parts • {data.warehouseDepartments.reduce((a, d) => a + d.totalUnits, 0)} warehouse units</p>
-                </button>
-                {data.warehouseDepartments.filter(d => d.department !== "Other").map(d => {
-                  const meta = DEPARTMENT_META[d.department] ?? DEPARTMENT_META["Other"]!;
-                  const active = stockDeptFilter === d.department;
-                  return <button key={d.department} onClick={() => goToWarehouseDept(d.department)} aria-label={`Browse warehouse department ${d.department}`} className="rounded-xl p-3 text-left" style={{ background: active ? "#fff" : "rgba(255,255,255,0.12)", color: active ? NAVY : "#fff", border: "1px solid rgba(255,255,255,0.25)" }}>
-                    <div className="flex items-center justify-between gap-2"><p className="font-display font-black leading-tight text-[15px]">{d.department}</p><span className="text-[11px] font-black px-1.5 py-0.5 rounded" style={{ background: active ? "var(--surface2)" : "rgba(255,255,255,0.2)" }}>{d.partCount}</span></div>
-                    <p className={`text-[11px] mt-1 leading-snug ${active ? "" : "text-white/75"}`} style={active ? { color: "var(--dim)" } : undefined}>{meta.shelf}</p>
-                    <p className={`text-[11px] font-bold mt-0.5 ${active ? "" : "text-white/75"}`} style={active ? { color: "var(--dim)" } : undefined}>{d.totalUnits} on hand{d.lowStockCount > 0 ? ` • ${d.lowStockCount} low` : ""}</p>
-                  </button>;
-                })}
-              </div>
-              {data.warehouseDepartments.find(d => d.department === "Other") && (
-                <button onClick={() => goToWarehouseDept("Other")} className="mt-2 w-full rounded-xl px-3 py-2 text-left text-xs font-bold text-white" style={{ background: "rgba(255,255,255,0.12)", border: "1px dashed rgba(255,255,255,0.4)" }}>Other / Unsorted — {data.warehouseDepartments.find(d => d.department === "Other")!.partCount} parts need a department. Tap to file them below in the catalog.</button>
-              )}
-              {/* Breadcrumb */}
-              <div className="flex items-center gap-1.5 mt-3 flex-wrap text-xs font-bold">
-                <button onClick={() => { if (warehouseId) setStockLocFilter(warehouseId); setStockDeptFilter("all"); setStockSubcatFilter("all"); }} className="px-2 py-1 rounded-full bg-white/15 text-white">Warehouse</button>
-                <span className="text-white/50">›</span>
-                <span className="px-2 py-1 rounded-full" style={{ background: stockDeptFilter !== "all" ? ORANGE : "rgba(255,255,255,0.15)", color: "#fff" }}>{stockDeptFilter === "all" ? "All departments" : stockDeptFilter}</span>
-                {stockDeptFilter !== "all" && <><span className="text-white/50">›</span><span className="px-2 py-1 rounded-full bg-white/15 text-white">{stockSubcatFilter === "all" ? "All shelves" : stockSubcatFilter}</span></>}
-              </div>
-            </section>
+              </section>
             )}
 
             {/* Subcategory shelves — only when a department is picked */}
@@ -876,42 +866,52 @@ export function App() {
               </section>
             )}
 
-            {/* Stock list — one location at a time, size-sorted, 50 rows per page */}
-            {!warehouseDeptMode && (
+            {/* Stock list — minimal rows: name, count, +/-; tap the name for details */}
             <section>
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <h2 className="font-display font-black text-lg">
                   {stockLocFilter !== "all" ? (data.locations.find(l => l.id === stockLocFilter)?.name ?? "Stock") : "All locations"}{stockDeptFilter !== "all" ? ` — ${stockDeptFilter}` : ""}{stockSubcatFilter !== "all" ? ` › ${stockSubcatFilter}` : ""} ({filteredStock.length})
                 </h2>
-                <span className="flex items-center gap-2">
-                  {isWarehouseSelected && stockDeptFilter !== "all" && <span className="text-xs font-bold" style={{ color: "var(--dim)" }}>{DEPARTMENT_META[stockDeptFilter]?.shelf}</span>}
-                  {stockLocFilter !== "all" && <button onClick={() => { setBulkFromId(stockLocFilter); setBulkQty({}); setBulkResult(null); document.getElementById("bulk-transfer")?.scrollIntoView({ behavior: "smooth", block: "start" }); }} className="px-3 py-2 rounded-full text-xs font-black text-white" style={{ background: ORANGE }}>↔ Bulk transfer from here</button>}
-                </span>
+                {stockLocFilter !== "all" && <button onClick={() => { setStockManageOpen(true); setBulkFromId(stockLocFilter); setBulkQty({}); setBulkResult(null); setTimeout(() => document.getElementById("bulk-transfer")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60); }} className="px-3 py-2 rounded-full text-xs font-black text-white" style={{ background: ORANGE }}>↔ Bulk transfer from here</button>}
               </div>
-              <p className="text-xs font-semibold mt-0.5" style={{ color: "var(--dim)" }}>Sorted by size — smallest first. Parts with no size in the name follow in name order.{filteredStock.length > stockLimit ? ` Showing ${stockLimit} of ${filteredStock.length}.` : ""}</p>
-              {stockDeptFilter !== "all" && stockSubcatFilter === "all" && activeDeptData && <p className="text-xs font-semibold mt-0.5" style={{ color: "var(--dim)" }}>{activeDeptData.partCount} different parts in this department • {activeDeptData.subcategories.length} shelf categories • {activeDeptData.totalUnits} units in the warehouse{activeDeptData.lowStockCount > 0 ? ` • ${activeDeptData.lowStockCount} at/below min` : ""}. Pick a shelf above to narrow it further.</p>}
-              {filteredStock.length === 0 ? <p className="mt-2 rounded-xl p-4 text-sm font-semibold" style={{ background: "var(--surface)", color: "var(--dim)" }}>No stock rows match. Try another shelf, clear the search, or go back to Locations — the part may only be stocked somewhere else.</p> : (
+              {filteredStock.length === 0 ? <p className="mt-2 rounded-xl p-4 text-sm font-semibold" style={{ background: "var(--surface)", color: "var(--dim)" }}>No stock rows match. Try another department, clear the search, or switch location.</p> : (
                 <>
-                  <div className="mt-2 space-y-2">{visibleStock.map(s => {
+                  <div className="mt-2 space-y-1.5">{visibleStock.map(s => {
                     const low = s.quantity <= s.minQty;
-                    return <div key={s.id} className="rounded-xl p-3" style={{ background: "var(--surface)", border: "1px solid var(--border)", borderLeft: low ? "4px solid #C1272D" : "4px solid transparent" }}>
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0"><p className="font-bold leading-tight">{s.partName}</p><p className="text-xs" style={{ color: "var(--dim)" }}>{s.sku || "No SKU"} • {s.category} • {(s as any).department} • {s.locationName}{s.priceCount > 0 ? ` • Avg ${fmtMoney(s.avgCostCents)}` : ""}</p>{low && <p className="text-xs font-bold" style={{ color: "#C1272D" }}>At/below min ({s.minQty}) — reorder</p>}</div>
-                        <p className="font-display font-black text-2xl leading-none" style={{ color: low ? "#C1272D" : "var(--text)" }}>{s.quantity}</p>
+                    const open = stockOpenId === s.id;
+                    return <div key={s.id} className="rounded-xl" style={{ background: "var(--surface)", border: "1px solid var(--border)", borderLeft: low ? "4px solid #C1272D" : "4px solid transparent" }}>
+                      <div className="flex items-center gap-2 p-2">
+                        <button onClick={() => setStockOpenId(open ? null : s.id)} aria-expanded={open} aria-label={`Details for ${s.partName}`} className="min-w-0 flex-1 text-left pl-1">
+                          <p className="font-bold leading-tight truncate">{s.partName}</p>
+                          {stockLocFilter === "all" && <p className="text-[11px] font-semibold truncate" style={{ color: "var(--dim)" }}>{s.locationName}</p>}
+                        </button>
+                        <button aria-label={`Remove one ${s.partName} from ${s.locationName}`} onClick={() => adjustStock.mutate({ stockId: s.id, delta: -1 })} className="w-12 py-2.5 rounded-lg font-black text-lg shrink-0" style={{ background: "var(--surface2)" }}>−</button>
+                        <p className="font-display font-black text-2xl leading-none w-11 text-center shrink-0" style={{ color: low ? "#C1272D" : "var(--text)" }}>{s.quantity}</p>
+                        <button aria-label={`Add one ${s.partName} to ${s.locationName}`} onClick={() => adjustStock.mutate({ stockId: s.id, delta: 1 })} className="w-12 py-2.5 rounded-lg font-black text-lg text-white shrink-0" style={{ background: NAVY }}>+</button>
                       </div>
-                      <div className="flex gap-2 mt-2">
-                        <button aria-label={`Remove one ${s.partName} from ${s.locationName}`} onClick={() => adjustStock.mutate({ stockId: s.id, delta: -1 })} className="flex-1 py-2 rounded-lg font-black text-lg" style={{ background: "var(--surface2)" }}>−</button>
-                        <button aria-label={`Add one ${s.partName} to ${s.locationName}`} onClick={() => adjustStock.mutate({ stockId: s.id, delta: 1 })} className="flex-1 py-2 rounded-lg font-black text-lg text-white" style={{ background: NAVY }}>+</button>
-                        <button aria-label={`Add five ${s.partName} to ${s.locationName}`} onClick={() => adjustStock.mutate({ stockId: s.id, delta: 5 })} className="px-4 py-2 rounded-lg font-bold text-sm" style={{ background: "var(--surface2)" }}>+5</button>
-                      </div>
+                      {open && (
+                        <div className="px-3 pb-3 pt-2 mx-2 mb-2 rounded-lg text-xs font-semibold space-y-1.5" style={{ background: "var(--surface2)", color: "var(--dim)" }}>
+                          <p>{s.sku || "No SKU"} • {s.category} • {(s as any).department} • {s.locationName}{s.priceCount > 0 ? ` • Avg ${fmtMoney(s.avgCostCents)}` : ""}</p>
+                          <p style={low ? { color: "#C1272D", fontWeight: 800 } : undefined}>Reorder at {s.minQty}{low ? " — at/below min now" : ""}</p>
+                          <button aria-label={`Add five ${s.partName} to ${s.locationName}`} onClick={() => adjustStock.mutate({ stockId: s.id, delta: 5 })} className="px-4 py-2 rounded-lg font-bold text-sm" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}>+5</button>
+                        </div>
+                      )}
                     </div>;
                   })}</div>
                   {filteredStock.length > stockLimit && <button onClick={() => setStockLimit(v => v + 50)} className="mt-3 w-full py-3 rounded-xl text-sm font-bold" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>Show next 50 — {filteredStock.length - stockLimit} more below</button>}
                 </>
               )}
             </section>
-            )}
             </>)}
+
+            {/* Admin lives behind one fold — the day-to-day screen is just find and count */}
+            {!stockManageOpen ? (
+              <button onClick={() => setStockManageOpen(true)} className="w-full py-3.5 rounded-2xl text-sm font-bold" style={{ background: "var(--surface)", border: "1px dashed var(--border)", color: "var(--dim)" }}>🛠 Manage — set stock levels · bulk transfer · parts catalog · locations</button>
+            ) : (<>
+            <div className="flex items-center justify-between">
+              <h3 className="font-display font-black text-lg">🛠 Manage</h3>
+              <button onClick={() => setStockManageOpen(false)} className="px-3 py-2 rounded-full text-xs font-bold" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>Hide ✕</button>
+            </div>
 
             {/* Set stock */}
             <section className="rounded-2xl p-4" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
@@ -1066,6 +1066,7 @@ export function App() {
               <button disabled={!locForm.name.trim()} onClick={() => createLoc.mutate()} className="mt-3 w-full py-3 rounded-xl text-white font-bold disabled:opacity-40" style={{ background: NAVY }}>Add location</button>
               <p className="text-xs mt-2" style={{ color: "var(--dim)" }}>Tip: name vans by number + tech (e.g. “Van 2 — Mike”) so staging and transfers are obvious on the floor.</p>
             </section>
+            </>)}
           </div>
         )}
 
